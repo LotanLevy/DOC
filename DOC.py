@@ -58,13 +58,14 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
 
             if count % print_freq == 0:
 
-                print(output)
+                print("iter: {}, {}".format(count, output))
 
                 for _ in range(validation_steps):
                     ref_inputs, ref_labels = ref_generator.next()
                     tar_inputs, tar_labels = tar_generator.next()
                     output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-                print(output)
+                print("iter: {}, {}".format(count, output))
+
                 model.on_validation_epoch_end()
 
         generator.on_epoch_end()
