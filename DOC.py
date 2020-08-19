@@ -67,6 +67,7 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
         print(np.argmax(preds, axis=1), np.argmax(ref_labels, axis=1))
 
         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+        print(output)
 
 
     # for epoch in range(epochs):
