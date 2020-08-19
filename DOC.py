@@ -51,7 +51,7 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
 
     for _ in range(validation_steps):
-        ref_inputs, ref_labels = tar_val_gen.next()
+        ref_inputs, ref_labels = ref_val_gen.next()
         tar_inputs, tar_labels = tar_val_gen.next()
         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
@@ -71,7 +71,7 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
                 print("iter: {}, {}".format(count, output))
 
                 for _ in range(validation_steps):
-                    ref_inputs, ref_labels = tar_val_gen.next()
+                    ref_inputs, ref_labels = ref_val_gen.next()
                     tar_inputs, tar_labels = tar_val_gen.next()
                     output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
                 print("iter: {}, {}".format(count, output))
