@@ -83,7 +83,7 @@ def get_gen(to_aug):
 
 
 
-def get_directory_iterator(gen, name, input_size, batch_size, dir_path):
+def get_directory_iterator(gen, name, input_size, batch_size, dir_path, clas):
     return gen.flow_from_directory(dir_path, subset=name,
                                                       seed=123,
                                                       shuffle=True,
@@ -93,8 +93,21 @@ def get_directory_iterator(gen, name, input_size, batch_size, dir_path):
 
 def create_generators(ref_path, tar_path, ref_aug, tar_aug, input_size, batch_size):
     ref_gen = get_gen(False)
-    ref_train_datagen = get_directory_iterator(ref_gen, "training", input_size, batch_size, ref_path)
-    ref_val_datagen = get_directory_iterator(ref_gen, "validation", input_size, batch_size, ref_path)
+    ref_classes = [str(i) for i in range(1000)]
+    ref_train_datagen = ref_gen.flow_from_directory(ref_path, subset="training",
+                                                      seed=123,
+                                                      shuffle=True,
+                                                      class_mode="categorical",
+                                                      target_size=input_size,
+                                                      batch_size=batch_size, classes=ref_classes)
+    ref_val_datagen = ref_gen.flow_from_directory(ref_path, subset="validation",
+                                                      seed=123,
+                                                      shuffle=True,
+                                                      class_mode="categorical",
+                                                      target_size=input_size,
+                                                      batch_size=batch_size, classes=ref_classes)
+    # ref_train_datagen = get_directory_iterator(ref_gen, "training", input_size, batch_size, ref_path)
+    # ref_val_datagen = get_directory_iterator(ref_gen, "validation", input_size, batch_size, ref_path)
 
     tar_gen = get_gen(False)
     tar_train_datagen = get_directory_iterator(tar_gen, "training", input_size, batch_size, tar_path)
