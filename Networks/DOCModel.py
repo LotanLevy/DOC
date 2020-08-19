@@ -4,6 +4,9 @@ from tensorflow.python.keras.applications import vgg16
 from tensorflow.python.keras.models import Model, Sequential
 from tensorflow.python.keras.layers import Dropout, Activation
 import os
+from train_test import Trainer, Validator
+
+
 
 
 
@@ -23,8 +26,10 @@ class DOCModel(NNInterface):
 
         self.ref_model.summary()
         self.tar_model.summary()
-        self.optimizer = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
 
+        self.ready_for_train = False
+        self.trainer = None
+        self.validator = None
 
     def build_network(self, cls_num, input_size):
         input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), name="input")
@@ -72,74 +77,83 @@ class DOCModel(NNInterface):
     def compute_output_shape(self, input_shape):
         return self.__model.compute_output_shape(input_shape)
 
+    def set_ready_for_train(self, optimizer, loss_lambda, losses=dict(), metrics=dict()):
+        self.ready_for_train = True
+        self.trainer = Trainer("train", losses, metrics, self.ref_model, self.tar_model, loss_lambda, optimizer)
+        self.validator = Validator("test", losses, metrics, self.ref_model, self.tar_model)
 
-    def set_losses_and_metrics(self, losses_and_metrics_dict, loss_lambd):
-        self.lambd = loss_lambd
-        self.losses_and_metrices = losses_and_metrics_dict
-        self.trackers = dict()
-        for name in losses_and_metrics_dict.keys():
-            self.trackers[name] = tf.keras.metrics.Mean(name=name)
 
-    def get_losses_and_metrics_state(self):
-        result = dict()
-        for tracker in self.trackers:
-            result[tracker] = self.trackers[tracker].result()
-        return result
+    # def set_losses_and_metrics(self, losses_and_metrics_dict, loss_lambd):
+    #     self.lambd = loss_lambd
+    #     self.losses_and_metrices = losses_and_metrics_dict
+    #     self.trackers = dict()
+    #     for name in losses_and_metrics_dict.keys():
+    #         self.trackers[name] = tf.keras.metrics.Mean(name=name)
+    #
+    # def get_losses_and_metrics_state(self):
+    #     result = dict()
+    #     for tracker in self.trackers:
+    #         result[tracker] = self.trackers[tracker].result()
+    #     return result
 
 
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
+        if self.ready_for_train:
+            self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+        # # input, labels = list(data)[0]
+        # #
+        # # input_split = int(labels.shape/2)
+        # # ref_inputs = input[:input_split, :,:,:], ref_labels = labels[:input_split]
+        # # tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
+        #
+        # with tf.GradientTape() as tape:
+        #     # Descriptiveness loss
+        #     prediction = self.ref_model(ref_inputs, training=True)
+        #     d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
+        #     self.trackers["d_loss"].update_state(d_loss)
+        # d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
+        #
+        #
+        # with tf.GradientTape() as tape:
+        #     # Compactness loss
+        #     prediction = self.tar_model(tar_inputs, training=False)
+        #     c_loss = self.losses_and_metrices["c_loss"](tar_labels, prediction)
+        #     self.trackers["c_loss"].update_state(c_loss)
+        # c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
+        #
+        # total_gradient = []
+        # assert (len(d_gradients) == len(c_gradients))
+        # for i in range(len(d_gradients)):
+        #     total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
+        #
+        # self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
+        #
+        # return self.get_losses_and_metrics_state()
+
+
+
+
+    def test_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
+        if self.ready_for_train:
+            self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
         # input, labels = list(data)[0]
         #
-        # input_split = int(labels.shape/2)
-        # ref_inputs = input[:input_split, :,:,:], ref_labels = labels[:input_split]
+        # input_split = int(labels.shape / 2)
+        # ref_inputs = input[:input_split, :, :, :], ref_labels = labels[:input_split]
         # tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
-
-        with tf.GradientTape() as tape:
-            # Descriptiveness loss
-            prediction = self.ref_model(ref_inputs, training=True)
-            d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
-            self.trackers["d_loss"].update_state(d_loss)
-        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
-
-
-        with tf.GradientTape() as tape:
-            # Compactness loss
-            prediction = self.tar_model(tar_inputs, training=False)
-            c_loss = self.losses_and_metrices["c_loss"](tar_labels, prediction)
-            self.trackers["c_loss"].update_state(c_loss)
-        c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
-
-        total_gradient = []
-        assert (len(d_gradients) == len(c_gradients))
-        for i in range(len(d_gradients)):
-            total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
-
-        self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
-
-        return self.get_losses_and_metrics_state()
-
-
-
-
-    def test_step(self, data):
-        input, labels = list(data)[0]
-
-        input_split = int(labels.shape / 2)
-        ref_inputs = input[:input_split, :, :, :], ref_labels = labels[:input_split]
-        tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
-
-        print(ref_labels.shape)
-
-        with tf.GradientTape() as tape:
-            prediction = self.ref_model(ref_inputs, training=False)
-            d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
-            self.trackers["d_loss"].update_state(d_loss)
-
-        with tf.GradientTape() as tape:
-            # Compactness loss
-            prediction = self.tar_model(tar_inputs, training=False)
-            c_loss = self.losses_and_metrices["c_loss"](tar_labels, prediction)
-            self.trackers["c_loss"].update_state(c_loss)
-
-
-        return self.get_losses_and_metrics_state()
+        #
+        # print(ref_labels.shape)
+        #
+        # with tf.GradientTape() as tape:
+        #     prediction = self.ref_model(ref_inputs, training=False)
+        #     d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
+        #     self.trackers["d_loss"].update_state(d_loss)
+        #
+        # with tf.GradientTape() as tape:
+        #     # Compactness loss
+        #     prediction = self.tar_model(tar_inputs, training=False)
+        #     c_loss = self.losses_and_metrices["c_loss"](tar_labels, prediction)
+        #     self.trackers["c_loss"].update_state(c_loss)
+        #
+        #
+        # return self.get_losses_and_metrics_state()

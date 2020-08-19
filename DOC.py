@@ -35,9 +35,6 @@ def get_args():
                         help='lambda constant, the impact of the compactness loss')
 
 
-
-
-
     parser.add_argument('--batch_size', '-b', type=int, default=2, help='number of batches')
 
 
@@ -55,7 +52,9 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
             count += 1
             ref_inputs, ref_labels = ref_generator.next()
             tar_inputs, tar_labels = tar_generator.next()
-            model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+            output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+            if count % print_freq == 0:
+                print(output)
 
 
         generator.on_epoch_end()
