@@ -50,7 +50,7 @@ class Trainer(TrainObject):
         self.optimizer = optimizer
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-        with tf.GradientTape() as tape:
+        with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
