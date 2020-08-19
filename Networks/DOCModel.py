@@ -129,9 +129,12 @@ class DOCModel(NNInterface):
         ref_inputs = input[:input_split, :, :, :], ref_labels = labels[:input_split]
         tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
 
+        print(ref_labels.shape)
+
         with tf.GradientTape() as tape:
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=False)
+            print(prediction.shape)
             d_loss = self.losses_and_metrices["d_loss"](tar_inputs, prediction)
             self.trackers["d_loss"].update_state(d_loss)
 
