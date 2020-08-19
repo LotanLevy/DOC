@@ -30,6 +30,8 @@ def get_args():
 
     parser.add_argument("--ref_aug", action='store_true')
     parser.add_argument("--tar_aug", action='store_true')
+    parser.add_argument('--lr', type=float, default=5e-5, help='learning rate')
+
 
     parser.add_argument('--lambd', type=float, default=0.1,
                         help='lambda constant, the impact of the compactness loss')
@@ -80,12 +82,14 @@ def main():
     # build the network #
     model = nn_builder.get_network(args.nntype, args.cls_num, args.input_size)
 
-    optimizer = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=args.lr)
 
-    losses_and_metrics = {"d_loss":tf.keras.losses.CategoricalCrossentropy(),
+    losses = {"d_loss":tf.keras.losses.CategoricalCrossentropy(),
               "c_loss": compactnessLoss(),
               "accuracy": tf.keras.metrics.Accuracy()}
-    model.set_losses_and_metrics(losses_and_metrics, args.lambd)
+
+    metrics = {"accuracy": tf.keras.metrics.Accuracy()}
+    model.set_ready_for_train(optimizer, args.lambd, losses=losses, metrics=metrics)
 
 
 
