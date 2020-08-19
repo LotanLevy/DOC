@@ -37,23 +37,6 @@ def read_image(image_path, input_size):
 #             for name in images_names:
 #                 image_path = os.path.join(cls_dir_path, name)
 
-def get_merged_generator(ref_generator, tar_generator):
-
-    def gen():
-        while True:
-            ref_data, ref_labels = ref_generator.next()
-            tar_data, tar_labels = tar_generator.next()
-
-            assert ref_data.shape == tar_data.shape
-            images = np.concatenate([ref_data, tar_data])
-            labels = np.concatenate([tf.argmax(ref_labels, axis=1),
-                                    tf.argmax(tar_labels, axis=1)])
-            yield (images, labels)
-
-    # dataset = tf.data.Dataset.from_generator(
-    #     gen, (tf.float32, tf.int64),
-    #     (tf.TensorShape([None, 224, 224, 3]), tf.TensorShape([None])))
-    return gen
 
 
 class DOCSequence(tf.keras.utils.Sequence):
@@ -109,24 +92,13 @@ def get_directory_iterator(gen, name, input_size, batch_size, dir_path):
                                                       batch_size=batch_size)
 
 def create_generators(ref_path, tar_path, ref_aug, tar_aug, input_size, batch_size):
-    ref_gen = get_gen(ref_aug)
+    ref_gen = get_gen(False)
     ref_train_datagen = get_directory_iterator(ref_gen, "training", input_size, batch_size, ref_path)
     ref_val_datagen = get_directory_iterator(ref_gen, "validation", input_size, batch_size, ref_path)
 
-    tar_gen = get_gen(tar_aug)
+    tar_gen = get_gen(False)
     tar_train_datagen = get_directory_iterator(tar_gen, "training", input_size, batch_size, tar_path)
     tar_val_datagen = get_directory_iterator(tar_gen, "validation", input_size, batch_size, tar_path)
 
-    train_datagen = DOCSequence(ref_train_datagen, tar_train_datagen, batch_size)
-    val_datagen = DOCSequence(ref_val_datagen, tar_val_datagen, batch_size)
-    return train_datagen, val_datagen
+    return ref_train_datagen, ref_val_datagen, tar_train_datagen, tar_val_datagen
 
-#
-#
-# train_datagen, val_datagen = create_generators("C:\\Users\\lotan\\Documents\\datasets\\imagenet_val_sorted",
-#                   "C:\\Users\\lotan\\Documents\\datasets\\amazon_dataset_small",
-#                   False, True, (224, 224), 32)
-#
-#
-#
-# print(list(train_datagen.take(1)))

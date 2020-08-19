@@ -43,13 +43,16 @@ def get_args():
 
     return parser.parse_args()
 
-def train(model, generator, steps_per_epoch, validation_data, validation_steps,
+def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
                                epochs, print_freq=10):
-    ref_generator, tar_generator = generator.ref_generator, generator.tar_generator
+    ref_train_gen, tar_train_gen = train_gens
+    ref_val_gen, tar_val_gen = validation_data
+
+
 
     for _ in range(validation_steps):
-        ref_inputs, ref_labels = ref_generator.next()
-        tar_inputs, tar_labels = tar_generator.next()
+        ref_inputs, ref_labels = tar_val_gen.next()
+        tar_inputs, tar_labels = tar_val_gen.next()
         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
 
@@ -59,8 +62,8 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
 
         for _ in range(steps_per_epoch):
             count += 1
-            ref_inputs, ref_labels = ref_generator.next()
-            tar_inputs, tar_labels = tar_generator.next()
+            ref_inputs, ref_labels = ref_train_gen.next()
+            tar_inputs, tar_labels = tar_train_gen.next()
             output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
             if count % print_freq == 0:
@@ -68,8 +71,8 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
                 print("iter: {}, {}".format(count, output))
 
                 for _ in range(validation_steps):
-                    ref_inputs, ref_labels = ref_generator.next()
-                    tar_inputs, tar_labels = tar_generator.next()
+                    ref_inputs, ref_labels = tar_val_gen.next()
+                    tar_inputs, tar_labels = tar_val_gen.next()
                     output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
                 print("iter: {}, {}".format(count, output))
 
@@ -92,9 +95,10 @@ def main():
 
     # data loaders #
 
-    train_datagen, val_datagen = create_generators(args.ref_path, args.tar_path,
-                                                     args.ref_aug, args.tar_aug,
-                                                   args.input_size, args.batch_size)
+    ref_train_datagen, ref_val_datagen, tar_train_datagen, tar_val_datagen = create_generators(
+                                                            args.ref_path, args.tar_path,
+                                                            args.ref_aug, args.tar_aug,
+                                                            args.input_size, args.batch_size)
 
     # build the network #
     model = nn_builder.get_network(args.nntype, args.cls_num, args.input_size)
@@ -122,7 +126,7 @@ def main():
 
     csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
 
-    train(model, train_datagen, 50, val_datagen, 10,
+    train(model, (ref_train_datagen, tar_train_datagen), 50, (ref_val_datagen, tar_val_datagen), 10,
           1, print_freq=10)
 
 
