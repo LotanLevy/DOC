@@ -62,9 +62,7 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
         ref_inputs, ref_labels = ref_val_gen.next()
         tar_inputs, tar_labels = tar_val_gen.next()
 
-        plt.figure()
-        plt.imshow(ref_inputs[0])
-        plt.show()
+
 
         preds = net(ref_inputs, training=False)
 
