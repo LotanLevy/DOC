@@ -81,6 +81,7 @@ class DOCSequence(tf.keras.utils.Sequence):
         images = np.concatenate([ref_data, tar_data])
         labels = np.concatenate([tf.argmax(ref_labels, axis=1),
                                  tf.argmax(tar_labels, axis=1)])
+        print(labels.shape)
         return (images, labels)
 
 

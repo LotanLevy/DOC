@@ -132,10 +132,8 @@ class DOCModel(NNInterface):
         print(ref_labels.shape)
 
         with tf.GradientTape() as tape:
-            # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=False)
-            print(prediction.shape)
-            d_loss = self.losses_and_metrices["d_loss"](tar_inputs, prediction)
+            d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
             self.trackers["d_loss"].update_state(d_loss)
 
         with tf.GradientTape() as tape:
