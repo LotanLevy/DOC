@@ -55,8 +55,8 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
             ref_inputs, ref_labels = ref_generator.next()
             tar_inputs, tar_labels = tar_generator.next()
             output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-            if count % print_freq == 0:
-                print(output)
+
+            print(output)
 
 
         generator.on_epoch_end()
