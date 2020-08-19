@@ -99,7 +99,7 @@ class DOCModel(NNInterface):
 
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         if self.ready_for_train:
-            self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+            return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
         # # input, labels = list(data)[0]
         # #
         # # input_split = int(labels.shape/2)
@@ -135,7 +135,7 @@ class DOCModel(NNInterface):
 
     def test_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         if self.ready_for_train:
-            self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+            return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
         # input, labels = list(data)[0]
         #
         # input_split = int(labels.shape / 2)
