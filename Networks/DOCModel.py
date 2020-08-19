@@ -16,8 +16,8 @@ class DOCModel(NNInterface):
         super().__init__()
         self.model_state = "Reference"
 
-        self.ref_model = Sequential(name="Reference Network")
-        self.tar_model = Sequential(name="Secondary Network")
+        self.ref_model = Sequential(name="reference")
+        self.tar_model = Sequential(name="secondary")
 
         self.build_network(cls_num, input_size)
 
