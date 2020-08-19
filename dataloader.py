@@ -5,6 +5,8 @@ import tensorflow as tf
 
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.python.keras.applications import vgg16
+
 from tensorflow.keras.applications import imagenet_utils
 
 
@@ -12,7 +14,7 @@ def read_image(image_path, input_size):
     image = load_img(image_path, target_size=input_size)
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
-    image = imagenet_utils.preprocess_input(image)
+    image = vgg16.preprocess_input(image)
     return image
 
 #
