@@ -63,7 +63,7 @@ def train(model, generator, steps_per_epoch, validation_data, validation_steps,
                 for _ in range(validation_steps):
                     ref_inputs, ref_labels = ref_generator.next()
                     tar_inputs, tar_labels = tar_generator.next()
-                    output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+                    output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
                 print(output)
                 model.on_validation_epoch_end()
 
