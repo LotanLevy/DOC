@@ -83,7 +83,7 @@ def get_gen(to_aug):
 
 
 
-def get_directory_iterator(gen, name, input_size, batch_size, dir_path, clas):
+def get_directory_iterator(gen, name, input_size, batch_size, dir_path):
     return gen.flow_from_directory(dir_path, subset=name,
                                                       seed=123,
                                                       shuffle=True,
