@@ -60,7 +60,7 @@ def main():
                                                    args.input_size, args.batch_size)
 
     # build the network #
-    model = nn_builder.get_network(args.nntype, args.cls_num, args.input_size, args.batch_size)
+    model = nn_builder.get_network(args.nntype, args.cls_num, args.input_size)
 
     optimizer = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
 
