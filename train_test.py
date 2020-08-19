@@ -1,6 +1,7 @@
 
 from abc import ABC,abstractmethod
 import tensorflow as tf
+import numpy as np
 
 class TrainObject(ABC):
 
@@ -54,6 +55,9 @@ class Trainer(TrainObject):
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
+            print(np.argmax(prediction))
+            print(np.argmax(ref_labels))
+
             self.update_state("d_loss", d_loss)
             accuracy = self.metrics["accuracy"](ref_labels, prediction)
             self.update_state("accuracy", accuracy)
