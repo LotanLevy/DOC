@@ -46,6 +46,13 @@ def get_args():
 def train(model, generator, steps_per_epoch, validation_data, validation_steps,
                                epochs, print_freq=10):
     ref_generator, tar_generator = generator.ref_generator, generator.tar_generator
+
+    for _ in range(validation_steps):
+        ref_inputs, ref_labels = ref_generator.next()
+        tar_inputs, tar_labels = tar_generator.next()
+        output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+
+
     for epoch in range(epochs):
 
         count = 0

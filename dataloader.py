@@ -14,7 +14,7 @@ def read_image(image_path, input_size):
     image = load_img(image_path, target_size=input_size)
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
-    image = vgg16.preprocess_input(image)
+    image = imagenet_utils.preprocess_input(image)
     return image
 
 #

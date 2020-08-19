@@ -54,6 +54,7 @@ class DOCModel(NNInterface):
         dropout1 = tf.keras.layers.Dropout(0.5, name='dropout1')
         dropout2 = tf.keras.layers.Dropout(0.5, name='dropout2')
 
+
         self.ref_model.add(fc1)
         self.ref_model.add(dropout1)
         self.ref_model.add(fc2)
