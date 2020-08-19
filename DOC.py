@@ -113,7 +113,7 @@ def main():
 
     hist = model.fit_generator(generator=train_generator, steps_per_epoch=len(train_generator), validation_data=validation_generator, validation_steps=10,
                                epochs=10, callbacks=[checkpoint, early, csv_logger, tensorboard_callback],
-                               workers=args.workers, use_multiprocessing=True)
+                               workers=2, use_multiprocessing=True)
 
 
 
