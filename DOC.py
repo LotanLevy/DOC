@@ -112,7 +112,7 @@ def main():
                                              batch_size=args.batch_size)
 
     hist = model.fit_generator(generator=train_generator, steps_per_epoch=len(train_generator), validation_data=validation_generator, validation_steps=10,
-                               epochs=10, 
+                               epochs=10,
                                workers=2, use_multiprocessing=True)
 
 
