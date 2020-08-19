@@ -71,47 +71,23 @@ def main():
 
     model.compile(optimizer=optimizer)
 
-    #
-    # log_dir = os.path.join(
-    #     os.path.join(args.output_path, "amazon_logs\\fit\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
-    # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-    #
-    # chackpoint_path = os.path.join(os.path.join(args.output_path, "checkpoint"))
-    #
-    # checkpoint = ModelCheckpoint(chackpoint_path, monitor='val_accuracy', save_best_only=True,
-    #                              save_weights_only=False, mode='max', verbose=1)
-    # early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
-    #
-    # csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
+
+    log_dir = os.path.join(
+        os.path.join(args.output_path, "amazon_logs\\fit\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
+    chackpoint_path = os.path.join(os.path.join(args.output_path, "checkpoint"))
+
+    checkpoint = ModelCheckpoint(chackpoint_path, monitor='val_accuracy', save_best_only=True,
+                                 save_weights_only=False, mode='max', verbose=1)
+    early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
+
+    csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
 
 
-    train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-                                        rotation_range=20,
-                                        zoom_range=0.15,
-                                        width_shift_range=0.2,
-                                        height_shift_range=0.2,
-                                        shear_range=0.15,
-                                        horizontal_flip=True,
-                                        fill_mode="nearest",
-                                       validation_split=0.2)
 
-    train_generator = train_datagen.flow_from_directory(args.tar_path,
-                                                       subset="training",
-                                                       seed=123,
-                                                       shuffle=True,
-                                                       class_mode="categorical",
-                                                       target_size=args.input_size,
-                                                       batch_size=args.batch_size)
 
-    validation_generator = train_datagen.flow_from_directory(args.tar_path,
-                                             subset="validation",
-                                             seed=123,
-                                             shuffle=True,
-                                             class_mode="categorical",
-                                             target_size=args.input_size,
-                                             batch_size=args.batch_size)
-
-    hist = model.fit_generator(generator=train_generator, steps_per_epoch=len(train_generator), validation_data=validation_generator, validation_steps=10,
+    hist = model.fit_generator(generator=train_datagen, steps_per_epoch=50, validation_data=val_datagen, validation_steps=10,
                                epochs=10,
                                workers=2, use_multiprocessing=True)
 
