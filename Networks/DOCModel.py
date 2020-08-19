@@ -127,13 +127,12 @@ class DOCModel(NNInterface):
 
         input_split = int(labels.shape / 2)
         ref_inputs = input[:input_split, :, :, :], ref_labels = labels[:input_split]
-        tar_inputs = input[input_split:, :, :, :], ref_labels = labels[input_split:]
+        tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
 
         with tf.GradientTape() as tape:
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=False)
-            hot_vec = tf.keras.utils.to_categorical([7,8], num_classes=1000)
-            d_loss = self.losses_and_metrices["d_loss"](hot_vec, prediction)
+            d_loss = self.losses_and_metrices["d_loss"](tar_inputs, prediction)
             self.trackers["d_loss"].update_state(d_loss)
 
         with tf.GradientTape() as tape:
