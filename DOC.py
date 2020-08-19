@@ -83,7 +83,7 @@ def main():
 
     optimizer = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
 
-    losses_and_metrics = {"d_loss":tf.keras.losses.SparseCategoricalCrossentropy(),
+    losses_and_metrics = {"d_loss":tf.keras.losses.CategoricalCrossentropy(),
               "c_loss": compactnessLoss(),
               "accuracy": tf.keras.metrics.Accuracy()}
     model.set_losses_and_metrics(losses_and_metrics, args.lambd)
