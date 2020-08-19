@@ -97,8 +97,7 @@ class DOCModel(NNInterface):
         with tf.GradientTape() as tape:
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=True)
-            hot_vec = tf.keras.utils.to_categorical([7, 8], num_classes=1000)
-            d_loss = self.losses_and_metrices["d_loss"](hot_vec, prediction)
+            d_loss = self.losses_and_metrices["d_loss"](ref_labels, prediction)
             self.trackers["d_loss"].update_state(d_loss)
         d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
 
