@@ -57,14 +57,13 @@ class Trainer(TrainObject):
             self.update_state("d_loss", d_loss)
             accuracy = self.metrics["accuracy"](ref_labels, prediction)
             self.update_state("accuracy", accuracy)
-        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
 
-
-        with tf.GradientTape() as tape:
             # Compactness loss
             prediction = self.tar_model(tar_inputs, training=False)
             c_loss = self.losses["c_loss"](tar_labels, prediction)
             self.update_state("c_loss", c_loss)
+        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
+
         c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
 
         total_gradient = []
@@ -91,6 +90,9 @@ class Validator(TrainObject):
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
             self.update_state("d_loss", d_loss)
+
+            accuracy = self.metrics["accuracy"](ref_labels, prediction)
+            self.update_state("accuracy", accuracy)
 
 
         with tf.GradientTape() as tape:
