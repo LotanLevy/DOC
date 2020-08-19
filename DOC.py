@@ -69,7 +69,6 @@ def main():
               "accuracy": tf.keras.metrics.Accuracy()}
     model.set_losses_and_metrics(losses_and_metrics, args.lambd)
 
-    model.compile(optimizer=optimizer)
 
 
     log_dir = os.path.join(

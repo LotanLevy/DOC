@@ -23,6 +23,8 @@ class DOCModel(NNInterface):
 
         self.ref_model.summary()
         self.tar_model.summary()
+        self.optimizer = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
+
 
     def build_network(self, cls_num, input_size):
         input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), name="input")
