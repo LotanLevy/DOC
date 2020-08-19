@@ -31,12 +31,14 @@ class DOCModel(NNInterface):
         self.trainer = None
         self.validator = None
 
+
+
     def build_network(self, cls_num, input_size):
         input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), name="input")
         self.ref_model.add(input)
         self.tar_model.add(input)
 
-        vgg_conv = vgg16.VGG16(weights=None,
+        vgg_conv = vgg16.VGG16(weights="imagenet",
                                include_top=True,
                                classes=cls_num,
                                input_shape=(input_size[0], input_size[1], 3))

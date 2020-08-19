@@ -55,6 +55,10 @@ class Trainer(TrainObject):
             # Descriptiveness loss
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
+
+
+
+
             print(np.argmax(prediction, axis=1))
             print(np.argmax(ref_labels, axis=1))
 
