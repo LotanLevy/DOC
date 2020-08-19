@@ -34,6 +34,12 @@ class TrainObject(ABC):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         pass
 
+    def reset(self):
+        for name in self.trackers.keys():
+            self.trackers[name].reset_states()
+
+
+
 
 class Trainer(TrainObject):
     def __init__(self, name, losses, metrics, ref_model, tar_model, lambd, optimizer):
@@ -49,6 +55,8 @@ class Trainer(TrainObject):
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
             self.update_state("d_loss", d_loss)
+            accuracy = self.metrics["accuracy"](ref_labels, prediction)
+            self.update_state("accuracy", accuracy)
         d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
 
 
@@ -67,6 +75,8 @@ class Trainer(TrainObject):
         self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
 
         return self.get_state()
+
+
 
 
 class Validator(TrainObject):
@@ -90,5 +100,7 @@ class Validator(TrainObject):
             self.update_state("c_loss", c_loss)
 
         return self.get_state()
+
+
 
 
