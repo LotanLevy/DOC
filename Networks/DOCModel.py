@@ -87,12 +87,12 @@ class DOCModel(NNInterface):
         return result
 
 
-    def train_step(self, data):
-        input, labels = list(data)[0]
-
-        input_split = int(labels.shape/2)
-        ref_inputs = input[:input_split, :,:,:], ref_labels = labels[:input_split]
-        tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
+    def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
+        # input, labels = list(data)[0]
+        #
+        # input_split = int(labels.shape/2)
+        # ref_inputs = input[:input_split, :,:,:], ref_labels = labels[:input_split]
+        # tar_inputs = input[input_split:, :, :, :], tar_labels = labels[input_split:]
 
         with tf.GradientTape() as tape:
             # Descriptiveness loss

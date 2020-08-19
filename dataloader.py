@@ -63,8 +63,6 @@ class DOCSequence(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.on_epoch_end()
 
-
-
     def __len__(self):
         return max(len(self.ref_generator), len(self.tar_generator))
 
@@ -77,12 +75,7 @@ class DOCSequence(tf.keras.utils.Sequence):
     def __getitem__(self, idx):
         ref_data, ref_labels = self.ref_generator[idx % len(self.ref_generator)]
         tar_data, tar_labels = self.tar_generator[idx % len(self.tar_generator)]
-        assert ref_data.shape == tar_data.shape
-        images = np.concatenate([ref_data, tar_data])
-        labels = np.concatenate([tf.argmax(ref_labels, axis=1),
-                                 tf.argmax(tar_labels, axis=1)])
-        print(labels.shape)
-        return (images, labels)
+        return ref_data, ref_labels, tar_data, tar_labels
 
 
 def get_gen(to_aug):
@@ -124,7 +117,7 @@ def create_generators(ref_path, tar_path, ref_aug, tar_aug, input_size, batch_si
 
     train_datagen = DOCSequence(ref_train_datagen, tar_train_datagen, batch_size)
     val_datagen = DOCSequence(ref_val_datagen, tar_val_datagen, batch_size)
-    return ref_train_datagen, ref_val_datagen
+    return train_datagen, val_datagen
 
 #
 #

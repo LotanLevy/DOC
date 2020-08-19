@@ -44,6 +44,25 @@ def get_args():
 
     return parser.parse_args()
 
+def train(model, generator, steps_per_epoch, validation_data, validation_steps,
+                               epochs, print_freq=10):
+    ref_generator, tar_generator = generator.ref_generator, generator.tar_generator
+    for epoch in range(epochs):
+
+        count = 0
+
+        for _ in range(steps_per_epoch):
+            count += 1
+            ref_inputs, ref_labels = ref_generator.next()
+            tar_inputs, tar_labels = tar_generator.next()
+            model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+
+
+        generator.on_epoch_end()
+
+
+
+
 
 def main():
     tf.keras.backend.set_floatx('float32')
@@ -69,7 +88,6 @@ def main():
               "accuracy": tf.keras.metrics.Accuracy()}
     model.set_losses_and_metrics(losses_and_metrics, args.lambd)
 
-    # model.compile(optimizer=optimizer, loss={"output_1":losses_and_metrics["d_loss"]})
 
 
     log_dir = os.path.join(
@@ -84,12 +102,15 @@ def main():
 
     csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
 
+    train(model, train_datagen, 50, val_datagen, 10,
+          1, print_freq=10)
 
 
 
-    hist = model.fit_generator(generator=train_datagen, steps_per_epoch=50, validation_data=val_datagen, validation_steps=10,
-                               epochs=10,
-                               workers=2, use_multiprocessing=True)
+
+    # hist = model.fit_generator(generator=train_datagen, steps_per_epoch=50, validation_data=val_datagen, validation_steps=10,
+    #                            epochs=10,
+    #                            workers=2, use_multiprocessing=True)
 
 
 
