@@ -12,20 +12,20 @@ import tensorflow as tf
 
 
 class DOCModel(NNInterface):
-    def __init__(self, cls_num, input_size):
+    def __init__(self, cls_num, input_size, batch_size):
         super().__init__()
         self.model_state = "Reference"
 
         self.ref_model = Sequential(name="Reference Network")
         self.tar_model = Sequential(name="Secondary Network")
 
-        self.build(cls_num, input_size)
+        self.build(cls_num, input_size, batch_size)
 
         self.ref_model.summary()
         self.tar_model.summary()
 
-    def build(self, cls_num, input_size):
-        input = tf.keras.layers.Input(shape=(input_size[0], input_size[1], 3), name="input")
+    def build(self, cls_num, input_size, batch_size):
+        input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), batch_size=batch_size, name="input")
         self.ref_model.add(input)
         self.tar_model.add(input)
 
