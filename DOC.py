@@ -6,6 +6,8 @@ import random
 import nn_builder
 import os
 import datetime
+from tensorflow.python.keras.applications import vgg16
+
 
 from losses_and_metrices import  compactnessLoss
 from dataloader import create_generators
@@ -46,40 +48,51 @@ def get_args():
 def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
                                epochs, print_freq=10):
     ref_train_gen, tar_train_gen = train_gens
+
+    print(ref_train_gen.class_indices)
     ref_val_gen, tar_val_gen = validation_data
+
+    net = vgg16.VGG16(weights="imagenet",
+                               include_top=True,
+                               classes=1000,
+                               input_shape=(224, 224, 3))
 
 
 
     for _ in range(validation_steps):
         ref_inputs, ref_labels = ref_val_gen.next()
         tar_inputs, tar_labels = tar_val_gen.next()
+
+        preds = net(ref_inputs, training=False)
+        print(np.argmax(preds, axis=1), np.argmax(ref_labels, axis=1))
+
         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
 
-    for epoch in range(epochs):
-
-        count = 0
-
-        for _ in range(steps_per_epoch):
-            count += 1
-            ref_inputs, ref_labels = ref_train_gen.next()
-            tar_inputs, tar_labels = tar_train_gen.next()
-            output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-
-            if count % print_freq == 0:
-
-                print("iter: {}, {}".format(count, output))
-
-                for _ in range(validation_steps):
-                    ref_inputs, ref_labels = ref_val_gen.next()
-                    tar_inputs, tar_labels = tar_val_gen.next()
-                    output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-                print("iter: {}, {}".format(count, output))
-
-                model.on_validation_epoch_end()
-
-        generator.on_epoch_end()
-        validation_data.on_epoch_end()
+    # for epoch in range(epochs):
+    #
+    #     count = 0
+    #
+    #     for _ in range(steps_per_epoch):
+    #         count += 1
+    #         ref_inputs, ref_labels = ref_train_gen.next()
+    #         tar_inputs, tar_labels = tar_train_gen.next()
+    #         output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+    #
+    #         if count % print_freq == 0:
+    #
+    #             print("iter: {}, {}".format(count, output))
+    #
+    #             for _ in range(validation_steps):
+    #                 ref_inputs, ref_labels = ref_val_gen.next()
+    #                 tar_inputs, tar_labels = tar_val_gen.next()
+    #                 output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+    #             print("iter: {}, {}".format(count, output))
+    #
+    #             model.on_validation_epoch_end()
+    #
+    #     generator.on_epoch_end()
+    #     validation_data.on_epoch_end()
 
 
 

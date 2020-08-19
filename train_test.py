@@ -59,8 +59,7 @@ class Trainer(TrainObject):
 
 
 
-            print(np.argmax(prediction, axis=1))
-            print(np.argmax(ref_labels, axis=1))
+            print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
 
             self.update_state("d_loss", d_loss)
             accuracy = self.metrics["accuracy"](ref_labels, prediction)
@@ -95,12 +94,16 @@ class Validator(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape() as tape:
             # Descriptiveness loss
-            prediction = self.ref_model(ref_inputs, training=True)
+
+            prediction = self.ref_model(ref_inputs, training=False)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
             self.update_state("d_loss", d_loss)
 
             accuracy = self.metrics["accuracy"](ref_labels, prediction)
             self.update_state("accuracy", accuracy)
+
+            print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
+
 
 
         with tf.GradientTape() as tape:
