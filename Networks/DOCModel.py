@@ -25,9 +25,9 @@ class DOCModel(NNInterface):
         self.tar_model.summary()
 
     def build_network(self, cls_num, input_size):
-        # input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), batch_size=batch_size, name="input")
-        # self.ref_model.add(input)
-        # self.tar_model.add(input)
+        input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), name="input")
+        self.ref_model.add(input)
+        self.tar_model.add(input)
 
         vgg_conv = vgg16.VGG16(weights=None,
                                include_top=True,
