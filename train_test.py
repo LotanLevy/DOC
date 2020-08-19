@@ -2,6 +2,8 @@
 from abc import ABC,abstractmethod
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.keras.applications import vgg16
+
 
 class TrainObject(ABC):
 
@@ -53,13 +55,16 @@ class Trainer(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
+            ref_inputs = vgg16.preprocess_input(ref_inputs)
+            tar_inputs = vgg16.preprocess_input(tar_inputs)
+
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
 
 
 
 
-            print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
+            # print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
 
             self.update_state("d_loss", d_loss)
             accuracy = self.metrics["accuracy"](ref_labels, prediction)
@@ -94,6 +99,10 @@ class Validator(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape() as tape:
             # Descriptiveness loss
+
+            ref_inputs = vgg16.preprocess_input(ref_inputs)
+            tar_inputs = vgg16.preprocess_input(tar_inputs)
+
 
             prediction = self.ref_model(ref_inputs, training=False)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
