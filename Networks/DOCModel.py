@@ -41,7 +41,7 @@ class DOCModel(NNInterface):
         vgg_conv = vgg16.VGG16(weights="imagenet",
                                include_top=True,
                                classes=cls_num,
-                               input_shape=(input_size[0], input_size[1], 3))
+                               input_shape=(input_size[0], input_size[1], 3), classifier_activation=None)
         for layer in vgg_conv.layers[:-3]:
             layer.trainable = False
             self.ref_model.add(layer)
@@ -50,9 +50,9 @@ class DOCModel(NNInterface):
         fc1 = vgg_conv.layers[-3]
         fc2 = vgg_conv.layers[-2]
         fc3 = vgg_conv.layers[-1]
-        predictions = vgg_conv.layers[-1]
+        # predictions = vgg_conv.layers[-1]
         # fc3 = tf.keras.layers.Dense(units=cls_num, name='fc3')
-        # predictions = tf.keras.layers.Activation('softmax')
+        predictions = tf.keras.layers.Activation('softmax')
         dropout1 = tf.keras.layers.Dropout(0.5, name='dropout1')
         dropout2 = tf.keras.layers.Dropout(0.5, name='dropout2')
 
@@ -61,7 +61,7 @@ class DOCModel(NNInterface):
         self.ref_model.add(dropout1)
         self.ref_model.add(fc2)
         self.ref_model.add(dropout2)
-        # self.ref_model.add(fc3)
+        self.ref_model.add(fc3)
         self.ref_model.add(predictions)
 
         self.tar_model.add(fc1)
