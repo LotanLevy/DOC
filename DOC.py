@@ -41,6 +41,11 @@ def get_args():
 
 
     parser.add_argument('--batch_size', '-b', type=int, default=2, help='number of batches')
+    parser.add_argument('--print', type=int, default=50)
+    parser.add_argument('--val_size', type=int, default=100)
+    parser.add_argument('--iter', type=int, default=800)
+
+
 
 
 
@@ -125,8 +130,8 @@ def main():
 
     csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
 
-    train(model, (ref_train_datagen, tar_train_datagen), 50, (ref_val_datagen, tar_val_datagen), 10,
-          1, print_freq=10)
+    train(model, (ref_train_datagen, tar_train_datagen), args.iter, (ref_val_datagen, tar_val_datagen), args.val_size,
+          1, print_freq=args.print)
 
 
 
