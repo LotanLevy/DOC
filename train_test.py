@@ -65,10 +65,6 @@ class Trainer(TrainObject):
             d_loss = self.losses["d_loss"](ref_labels, prediction)
 
 
-
-
-            # print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
-
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
@@ -110,12 +106,6 @@ class Validator(TrainObject):
             d_loss = self.losses["d_loss"](ref_labels, prediction)
             self.update_state("d_loss", d_loss)
 
-            print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
-
-            m = tf.keras.metrics.CategoricalAccuracy()
-
-            m.update_state(ref_labels, prediction)
-            print(m.result().numpy())
 
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 

@@ -52,25 +52,6 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
     ref_val_gen, tar_val_gen = validation_data
 
-    net = vgg16.VGG16(weights="imagenet",
-                               include_top=True,
-                               classes=1000,
-                               input_shape=(224, 224, 3))
-
-
-    for _ in range(validation_steps):
-        ref_inputs, ref_labels = ref_val_gen.next()
-        tar_inputs, tar_labels = tar_val_gen.next()
-
-
-
-        preds = net(ref_inputs, training=False)
-
-
-        output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-        print(output)
-
-
     for epoch in range(epochs):
 
         count = 0
@@ -85,13 +66,15 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
                 print("iter: {}, {}".format(count, output))
 
-                for _ in range(validation_steps):
-                    ref_inputs, ref_labels = ref_val_gen.next()
-                    tar_inputs, tar_labels = tar_val_gen.next()
-                    output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-                print("iter: {}, {}".format(count, output))
+                if count % 2 * print_freq == 0:
 
-                model.on_validation_epoch_end()
+                    for _ in range(validation_steps):
+                        ref_inputs, ref_labels = ref_val_gen.next()
+                        tar_inputs, tar_labels = tar_val_gen.next()
+                        output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+                    print("iter: {}, {}".format(count, output))
+
+                    model.on_validation_epoch_end()
 
 
 
