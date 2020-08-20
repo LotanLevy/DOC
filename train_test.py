@@ -70,8 +70,7 @@ class Trainer(TrainObject):
             # print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
 
             self.update_state("d_loss", d_loss)
-            accuracy = self.metrics["accuracy"](ref_labels, prediction)
-            self.update_state("accuracy", accuracy)
+            self.metrics["accuracy"].update_state(ref_labels, prediction)
 
             # Compactness loss
             prediction = self.tar_model(tar_inputs, training=False)
