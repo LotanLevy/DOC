@@ -110,8 +110,8 @@ class Validator(TrainObject):
             d_loss = self.losses["d_loss"](ref_labels, prediction)
             self.update_state("d_loss", d_loss)
 
-            accuracy = self.metrics["accuracy"](ref_labels, prediction)
-            self.update_state("accuracy", accuracy)
+            self.metrics["accuracy"].update_state(ref_labels, prediction)
+
 
             print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
 
