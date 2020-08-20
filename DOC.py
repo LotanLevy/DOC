@@ -71,30 +71,29 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
         print(output)
 
 
-    # for epoch in range(epochs):
-    #
-    #     count = 0
-    #
-    #     for _ in range(steps_per_epoch):
-    #         count += 1
-    #         ref_inputs, ref_labels = ref_train_gen.next()
-    #         tar_inputs, tar_labels = tar_train_gen.next()
-    #         output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-    #
-    #         if count % print_freq == 0:
-    #
-    #             print("iter: {}, {}".format(count, output))
-    #
-    #             for _ in range(validation_steps):
-    #                 ref_inputs, ref_labels = ref_val_gen.next()
-    #                 tar_inputs, tar_labels = tar_val_gen.next()
-    #                 output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-    #             print("iter: {}, {}".format(count, output))
-    #
-    #             model.on_validation_epoch_end()
-    #
-    #     generator.on_epoch_end()
-    #     validation_data.on_epoch_end()
+    for epoch in range(epochs):
+
+        count = 0
+
+        for _ in range(steps_per_epoch):
+            count += 1
+            ref_inputs, ref_labels = ref_train_gen.next()
+            tar_inputs, tar_labels = tar_train_gen.next()
+            output = model.train_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+
+            if count % print_freq == 0:
+
+                print("iter: {}, {}".format(count, output))
+
+                for _ in range(validation_steps):
+                    ref_inputs, ref_labels = ref_val_gen.next()
+                    tar_inputs, tar_labels = tar_val_gen.next()
+                    output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+                print("iter: {}, {}".format(count, output))
+
+                model.on_validation_epoch_end()
+
+
 
 
 
