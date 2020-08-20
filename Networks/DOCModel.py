@@ -49,8 +49,10 @@ class DOCModel(NNInterface):
 
         fc1 = vgg_conv.layers[-3]
         fc2 = vgg_conv.layers[-2]
-        fc3 = tf.keras.layers.Dense(units=cls_num, name='fc3')
-        predictions = tf.keras.layers.Activation('softmax')
+        fc3 = vgg_conv.layers[-1]
+        predictions = vgg_conv.layers[-1]
+        # fc3 = tf.keras.layers.Dense(units=cls_num, name='fc3')
+        # predictions = tf.keras.layers.Activation('softmax')
         dropout1 = tf.keras.layers.Dropout(0.5, name='dropout1')
         dropout2 = tf.keras.layers.Dropout(0.5, name='dropout2')
 
