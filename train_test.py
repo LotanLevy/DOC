@@ -14,7 +14,7 @@ class TrainObject(ABC):
         self.trackers = dict()
 
         self.add_func_dict(losses, self.losses)
-        self.add_func_dict(metrics, self.metrics)
+        self.add_func_dict(metrics, self.metrics, add_traker=False)
 
     def get_name(self, func_name):
         return self.name + "_" + func_name
