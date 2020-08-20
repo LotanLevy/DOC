@@ -126,7 +126,7 @@ def main():
 
     print(tf.keras.metrics.Accuracy())
 
-    metrics = {"accuracy": tf.keras.metrics.Accuracy()}
+    metrics = {"accuracy": tf.keras.metrics.CategoricalAccuracy()}
     model.set_ready_for_train(optimizer, args.lambd, losses=losses, metrics=metrics)
 
 
