@@ -33,7 +33,7 @@ class TrainObject(ABC):
     def get_state(self):
         result = dict()
         for tracker in self.trackers:
-            result[tracker] = self.trackers[tracker].result()
+            result[tracker] = self.trackers[tracker].result().numpy()
         return result
 
     @abstractmethod
