@@ -116,6 +116,13 @@ def main():
                                                             args.ref_aug, args.tar_aug,
                                                             args.input_size, args.batch_size)
 
+    m= tf.keras.metrics.CategoricalAccuracy()
+
+
+    m.update_state([[0, 0, 1], [0, 1, 0]], [[0.1, 0.9, 0.8],
+                                            [0.05, 0.95, 0]])
+    print(m.result().numpy())
+
     # build the network #
     model = nn_builder.get_network(args.nntype, args.cls_num, args.input_size)
 
@@ -124,7 +131,6 @@ def main():
     losses = {"d_loss":tf.keras.losses.CategoricalCrossentropy(),
               "c_loss": compactnessLoss()}
 
-    print(tf.keras.metrics.Accuracy())
 
     metrics = {"accuracy": tf.keras.metrics.CategoricalAccuracy()}
     model.set_ready_for_train(optimizer, args.lambd, losses=losses, metrics=metrics)
