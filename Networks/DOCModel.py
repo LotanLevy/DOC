@@ -101,4 +101,4 @@ class DOCModel(NNInterface):
 
     def test_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         if self.ready_for_train:
-            return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+            return self.validator.step(ref_inputs, ref_labels, tar_inputs, tar_labels)

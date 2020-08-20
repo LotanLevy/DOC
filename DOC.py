@@ -122,8 +122,9 @@ def main():
     optimizer = tf.keras.optimizers.Adam(learning_rate=args.lr)
 
     losses = {"d_loss":tf.keras.losses.CategoricalCrossentropy(),
-              "c_loss": compactnessLoss(),
-              "accuracy": tf.keras.metrics.Accuracy()}
+              "c_loss": compactnessLoss()}
+
+    print(tf.keras.metrics.Accuracy())
 
     metrics = {"accuracy": tf.keras.metrics.Accuracy()}
     model.set_ready_for_train(optimizer, args.lambd, losses=losses, metrics=metrics)

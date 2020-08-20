@@ -19,10 +19,13 @@ class TrainObject(ABC):
     def get_name(self, func_name):
         return self.name + "_" + func_name
 
-    def add_func_dict(self, orig_dict, new_dict):
+    def add_func_dict(self, orig_dict, new_dict, add_traker=True):
         for func_name in orig_dict:
             new_dict[func_name] = orig_dict[func_name]
-            self.trackers[self.get_name(func_name)] = tf.keras.metrics.Mean(name=self.get_name(func_name))
+            if add_traker:
+                self.trackers[self.get_name(func_name)] = tf.keras.metrics.Mean(name=self.get_name(func_name))
+            else:
+                self.trackers[self.get_name(func_name)] = new_dict[func_name]
 
     def update_state(self, func_name, value):
         self.trackers[self.get_name(func_name)].update_state(value)
