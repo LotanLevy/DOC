@@ -61,7 +61,7 @@ class DOCModel(NNInterface):
         self.ref_model.add(dropout1)
         self.ref_model.add(fc2)
         self.ref_model.add(dropout2)
-        self.ref_model.add(fc3)
+        # self.ref_model.add(fc3)
         self.ref_model.add(predictions)
 
         self.tar_model.add(fc1)
