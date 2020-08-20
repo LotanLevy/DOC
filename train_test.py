@@ -56,7 +56,7 @@ class Trainer(TrainObject):
         self.optimizer = optimizer
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-        with tf.GradientTape(persistent=True) as tape:
+        with tf.GradientTape() as tape:
             # Descriptiveness loss
             ref_inputs = vgg16.preprocess_input(ref_inputs)
             tar_inputs = vgg16.preprocess_input(tar_inputs)
@@ -68,11 +68,15 @@ class Trainer(TrainObject):
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
+        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
+
+
+        with tf.GradientTape() as tape:
+
             # Compactness loss
             prediction = self.tar_model(tar_inputs, training=False)
             c_loss = self.losses["c_loss"](tar_labels, prediction)
             self.update_state("c_loss", c_loss)
-        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
 
         c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
 
