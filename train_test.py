@@ -113,9 +113,6 @@ class Validator(TrainObject):
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
 
-            print(np.argmax(prediction, axis=1), np.argmax(ref_labels, axis=1))
-
-
 
         with tf.GradientTape() as tape:
             # Compactness loss
