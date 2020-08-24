@@ -74,7 +74,7 @@ class Trainer(TrainObject):
         with tf.GradientTape() as tape:
 
             # Compactness loss
-            prediction = self.tar_model(tar_inputs, training=False)
+            prediction = self.tar_model(tar_inputs, training=True)
             c_loss = self.losses["c_loss"](tar_labels, prediction)
             self.update_state("c_loss", c_loss)
 
