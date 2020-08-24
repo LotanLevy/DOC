@@ -24,12 +24,32 @@ class DOCModel(NNInterface):
 
         self.build_network(cls_num, input_size)
 
+        vgg_model = vgg16.VGG16(weights='imagenet')
+
+        self.ref_model = self.get_dropout_model( vgg_model, 2)
+        self.tar_model = self.get_dropout_model(vgg_model, 1)
+
         self.ref_model.summary()
         self.tar_model.summary()
 
         self.ready_for_train = False
         self.trainer = None
         self.validator = None
+
+
+    def get_dropout_model(self, vgg_model, dropout_num):
+        model = tf.keras.Sequential()
+
+        dropout1 = Dropout(0.5)
+        dropout2 = Dropout(0.5)
+
+        for layer in self.vgg_model.layers:
+            model.add(layer)
+            if layer.name == "fc1" and dropout_num > 0:
+                model.add(dropout1)
+            if layer.name == "fc2" and dropout_num > 1:
+                model.add(dropout2)
+        return model
 
 
 

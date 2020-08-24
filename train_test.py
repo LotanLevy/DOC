@@ -59,7 +59,6 @@ class Trainer(TrainObject):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
             ref_inputs = vgg16.preprocess_input(ref_inputs)
-            tar_inputs = vgg16.preprocess_input(tar_inputs)
 
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
@@ -67,6 +66,9 @@ class Trainer(TrainObject):
 
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
+
+            tar_inputs = vgg16.preprocess_input(tar_inputs)
+
 
             # Compactness loss
             prediction = self.tar_model(tar_inputs, training=True)
