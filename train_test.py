@@ -126,10 +126,10 @@ class Validator(TrainObject):
 
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
-            # Compactness loss
-            prediction = self.tar_model(tar_inputs, training=False)
-            c_loss = self.losses["c_loss"](tar_labels, prediction)
-            self.update_state("c_loss", c_loss)
+            # # Compactness loss
+            # prediction = self.tar_model(tar_inputs, training=False)
+            # c_loss = self.losses["c_loss"](tar_labels, prediction)
+            # self.update_state("c_loss", c_loss)
 
 
 
@@ -139,7 +139,7 @@ class Validator(TrainObject):
         #     c_loss = self.losses["c_loss"](tar_labels, prediction)
         #     self.update_state("c_loss", c_loss)
 
-        self.update_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
+        # self.update_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
 
 
         return self.get_state()
