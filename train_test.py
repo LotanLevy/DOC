@@ -69,11 +69,11 @@ class Trainer(TrainObject):
 
             tar_inputs = vgg16.preprocess_input(tar_inputs)
 
-
-            # Compactness loss
-            prediction = self.tar_model(tar_inputs, training=True)
-            c_loss = self.losses["c_loss"](tar_labels, prediction)
-            self.update_state("c_loss", c_loss)
+            #
+            # # Compactness loss
+            # prediction = self.tar_model(tar_inputs, training=True)
+            # c_loss = self.losses["c_loss"](tar_labels, prediction)
+            # self.update_state("c_loss", c_loss)
 
         d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
 
@@ -85,16 +85,18 @@ class Trainer(TrainObject):
         #     c_loss = self.losses["c_loss"](tar_labels, prediction)
         #     self.update_state("c_loss", c_loss)
 
-        c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
+        # c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
 
-        self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
+        # self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
+        #
+        # total_gradient = []
+        # assert (len(d_gradients) == len(c_gradients))
+        # for i in range(len(d_gradients)):
+        #     total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
+        #
+        # self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
 
-        total_gradient = []
-        assert (len(d_gradients) == len(c_gradients))
-        for i in range(len(d_gradients)):
-            total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
-
-        self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
+        self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
 
         return self.get_state()
 
