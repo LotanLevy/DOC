@@ -80,6 +80,8 @@ class Trainer(TrainObject):
 
         c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
 
+        self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
+
         total_gradient = []
         assert (len(d_gradients) == len(c_gradients))
         for i in range(len(d_gradients)):
@@ -120,6 +122,9 @@ class Validator(TrainObject):
             prediction = self.tar_model(tar_inputs, training=False)
             c_loss = self.losses["c_loss"](tar_labels, prediction)
             self.update_state("c_loss", c_loss)
+
+        self.update_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
+
 
         return self.get_state()
 

@@ -113,7 +113,7 @@ def main():
               "c_loss": compactnessLoss()}
 
 
-    metrics = {"accuracy": tf.keras.metrics.CategoricalAccuracy()}
+    metrics = {"accuracy": tf.keras.metrics.CategoricalAccuracy(), "total":tf.keras.metrics.Mean(name="total")}
     model.set_ready_for_train(optimizer, args.lambd, losses=losses, metrics=metrics)
 
 
