@@ -85,7 +85,7 @@ class DOCModel(NNInterface):
     def set_ready_for_train(self, optimizer, loss_lambda, losses=dict(), metrics=dict()):
         self.ready_for_train = True
         self.trainer = Trainer("train", losses, metrics, self.ref_model, self.tar_model, loss_lambda, optimizer)
-        self.validator = Validator("test", losses, metrics, self.ref_model, self.tar_model)
+        self.validator = Validator("test", losses, metrics, self.ref_model, self.tar_model, loss_lambda)
 
     def on_validation_epoch_end(self):
         self.validator.reset()

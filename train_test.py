@@ -95,10 +95,12 @@ class Trainer(TrainObject):
 
 
 class Validator(TrainObject):
-    def __init__(self, name, losses, metrics, ref_model, tar_model):
+    def __init__(self, name, losses, metrics, ref_model, tar_model, lambd):
         super(Validator, self).__init__(name, losses, metrics)
         self.ref_model = ref_model
         self.tar_model = tar_model
+        self.lambd = lambd
+
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape() as tape:
