@@ -43,7 +43,7 @@ class DOCModel(NNInterface):
         dropout1 = Dropout(0.5)
         dropout2 = Dropout(0.5)
 
-        for layer in self.vgg_model.layers:
+        for layer in vgg_model.layers:
             model.add(layer)
             if layer.name == "fc1" and dropout_num > 0:
                 model.add(dropout1)
