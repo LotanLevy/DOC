@@ -5,6 +5,10 @@ from tensorflow.python.keras.models import Model, Sequential
 from tensorflow.python.keras.layers import Dropout, Activation
 import os
 from train_test import Trainer, Validator
+from tensorflow.keras.applications import imagenet_utils
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 
 
@@ -117,8 +121,22 @@ class DOCModel(NNInterface):
 
 
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-        if self.ready_for_train:
-            return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+
+        c = 0
+    
+        while(c < 10):
+            ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
+            preds = self.ref_model(ref_inputs)
+            pred_label = np.argmax(preds[0])
+            plt.figure()
+            plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[0]), np.max(preds[0]), pred_label))
+            plt.imshow(ref_inputs[0].astype(int))
+            plt.savefig(str(c)+".jpg")
+
+
+            c+=1
+        # if self.ready_for_train:
+        #     return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
 
 
