@@ -125,7 +125,7 @@ class DOCModel(NNInterface):
         c = 0
 
         while(c < 2):
-            ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
+            # ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
             preds = self.ref_model(ref_inputs)
             pred_label = np.argmax(preds[c])
             plt.figure()
