@@ -3,7 +3,7 @@ from abc import ABC,abstractmethod
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.keras.applications import vgg16
-
+import matplotlib.pyplot as plt
 
 class TrainObject(ABC):
 
@@ -114,6 +114,10 @@ class Validator(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
+
+            plt.imshow(ref_inputs[0].astype(np.int))
+            plt.title(np.argmax(ref_labels[0]))
+            plt.show()
 
             ref_inputs = vgg16.preprocess_input(ref_inputs)
             tar_inputs = vgg16.preprocess_input(tar_inputs)
