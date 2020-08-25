@@ -4,6 +4,8 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.python.keras.applications import vgg16
 import matplotlib.pyplot as plt
+from tensorflow.keras.applications import imagenet_utils
+
 
 class TrainObject(ABC):
 
@@ -58,7 +60,10 @@ class Trainer(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
-            ref_inputs = vgg16.preprocess_input(ref_inputs)
+            # ref_inputs = vgg16.preprocess_input(ref_inputs)
+
+            ref_inputs = imagenet_utils(ref_inputs)
+
 
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
@@ -67,7 +72,7 @@ class Trainer(TrainObject):
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
-            tar_inputs = vgg16.preprocess_input(tar_inputs)
+            tar_inputs = imagenet_utils(tar_inputs)
 
             #
             # # Compactness loss
