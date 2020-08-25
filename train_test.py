@@ -62,7 +62,7 @@ class Trainer(TrainObject):
             # Descriptiveness loss
             # ref_inputs = vgg16.preprocess_input(ref_inputs)
 
-            ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
+            # ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
 
 
             prediction = self.ref_model(ref_inputs, training=True)
@@ -72,7 +72,7 @@ class Trainer(TrainObject):
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
-            tar_inputs = imagenet_utils.preprocess_input(tar_inputs)
+            # tar_inputs = imagenet_utils.preprocess_input(tar_inputs)
 
             #
             # # Compactness loss
@@ -119,9 +119,9 @@ class Validator(TrainObject):
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
-
-            ref_inputs = vgg16.preprocess_input(ref_inputs)
-            tar_inputs = vgg16.preprocess_input(tar_inputs)
+            #
+            # ref_inputs = vgg16.preprocess_input(ref_inputs)
+            # tar_inputs = vgg16.preprocess_input(tar_inputs)
 
 
             prediction = self.ref_model(ref_inputs, training=False)
