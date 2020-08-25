@@ -70,15 +70,15 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
                 print("iter: {}, {}".format(count, output))
 
-                if count % 2 * print_freq == 0:
-
-                    for _ in range(validation_steps):
-                        ref_inputs, ref_labels = ref_val_gen.next()
-                        tar_inputs, tar_labels = tar_val_gen.next()
-                        output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
-                    print("iter: {}, {}".format(count, output))
-
-                    model.on_validation_epoch_end()
+                # if count % 2 * print_freq == 0:
+                #
+                #     for _ in range(validation_steps):
+                #         ref_inputs, ref_labels = ref_val_gen.next()
+                #         tar_inputs, tar_labels = tar_val_gen.next()
+                #         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+                #     print("iter: {}, {}".format(count, output))
+                #
+                #     model.on_validation_epoch_end()
 
 
 

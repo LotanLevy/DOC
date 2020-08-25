@@ -115,12 +115,6 @@ class Validator(TrainObject):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
 
-
-
-            plt.imshow(ref_inputs[0].astype(np.int))
-            plt.title(np.argmax(ref_labels[0]))
-            plt.show()
-
             ref_inputs = vgg16.preprocess_input(ref_inputs)
             tar_inputs = vgg16.preprocess_input(tar_inputs)
 
