@@ -62,7 +62,7 @@ class Trainer(TrainObject):
             # Descriptiveness loss
             # ref_inputs = vgg16.preprocess_input(ref_inputs)
 
-            ref_inputs = imagenet_utils(ref_inputs)
+            ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
 
 
             prediction = self.ref_model(ref_inputs, training=True)
