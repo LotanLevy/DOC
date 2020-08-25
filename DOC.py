@@ -60,7 +60,7 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
     ref_val_gen, tar_val_gen = validation_data
 
-    # i_ref_inputs, i_ref_labels = ref_val_gen.next()
+    i_ref_inputs, i_ref_labels = ref_val_gen.next()
 
     for epoch in range(1):
 
@@ -82,6 +82,20 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
                         ref_inputs, ref_labels = ref_val_gen.next()
                         tar_inputs, tar_labels = tar_val_gen.next()
                         output = model.test_step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+
+                        c = 0
+
+                        while (c < 2):
+                            proc_inputs = imagenet_utils.preprocess_input(i_ref_inputs)
+                            preds = model(proc_inputs)
+                            pred_label = np.argmax(preds[c])
+                            plt.figure()
+                            plt.title("true label: {}, pred: {}%, {}".format(np.argmax(i_ref_labels[c]), np.max(preds[c]),
+                                                                             pred_label))
+                            plt.imshow(ref_inputs[c].astype(int))
+                            plt.savefig(str(c) + "_{}.jpg".format(print_freq))
+
+                            c += 1
                     print("iter: {}, {}".format(count, output))
 
                     model.on_validation_epoch_end()

@@ -122,21 +122,9 @@ class DOCModel(NNInterface):
 
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
 
-        c = 0
 
-        while(c < 2):
-            # ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
-            preds = self.ref_model(ref_inputs)
-            pred_label = np.argmax(preds[c])
-            plt.figure()
-            plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[c]), np.max(preds[c]), pred_label))
-            plt.imshow(ref_inputs[c].astype(int))
-            plt.savefig(str(c)+"_f.jpg")
-
-
-            c+=1
-        # if self.ready_for_train:
-        #     return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
+        if self.ready_for_train:
+            return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 
 
 
