@@ -72,7 +72,7 @@ class Trainer(TrainObject):
             self.update_state("d_loss", d_loss)
             self.metrics["accuracy"].update_state(ref_labels, prediction)
 
-            tar_inputs = imagenet_utils(tar_inputs)
+            tar_inputs = imagenet_utils.preprocess_input(tar_inputs)
 
             #
             # # Compactness loss
