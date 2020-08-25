@@ -54,9 +54,13 @@ def get_args():
 
 def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
                                epochs, print_freq=10):
+
+
     ref_train_gen, tar_train_gen = train_gens
 
     ref_val_gen, tar_val_gen = validation_data
+
+    # i_ref_inputs, i_ref_labels = ref_val_gen.next()
 
     for epoch in range(epochs):
 

@@ -123,7 +123,7 @@ class DOCModel(NNInterface):
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
 
         c = 0
-    
+
         while(c < 10):
             ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
             preds = self.ref_model(ref_inputs)
