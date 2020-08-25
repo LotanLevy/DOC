@@ -129,8 +129,22 @@ def main():
 
     csv_logger = CSVLogger(os.path.join(args.output_path, 'log.csv'), append=True, separator=';')
 
-    train(model, (ref_train_datagen, tar_train_datagen), args.iter, (ref_val_datagen, tar_val_datagen), args.val_size,
-          1, print_freq=args.print)
+    # train(model, (ref_train_datagen, tar_train_datagen), args.iter, (ref_val_datagen, tar_val_datagen), args.val_size,
+    #       1, print_freq=args.print)
+
+    c = 0
+
+    while(c < 10):
+        ref_inputs, ref_labels = ref_train_datagen.next()
+        preds = model(ref_inputs)
+        pred_label = np.argmax(preds[0])
+        plt.figure()
+        plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[0]), np.max(preds[0]), pred_label))
+        plt.imshow(ref_inputs[0].astype(int))
+        plt.savefig(str(c)+".jpg")
+
+
+        c+=1
 
 
 
