@@ -62,11 +62,11 @@ def train(model, train_gens, steps_per_epoch, validation_data, validation_steps,
 
     # i_ref_inputs, i_ref_labels = ref_val_gen.next()
 
-    for epoch in range(epochs):
+    for epoch in range(1):
 
         count = 0
 
-        for _ in range(steps_per_epoch):
+        for _ in range(1):
             count += 1
             ref_inputs, ref_labels = ref_train_gen.next()
             tar_inputs, tar_labels = tar_train_gen.next()

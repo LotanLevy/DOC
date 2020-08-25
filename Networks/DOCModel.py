@@ -124,13 +124,13 @@ class DOCModel(NNInterface):
 
         c = 0
 
-        while(c < 10):
+        while(c < 2):
             ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
             preds = self.ref_model(ref_inputs)
-            pred_label = np.argmax(preds[0])
+            pred_label = np.argmax(preds[c])
             plt.figure()
-            plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[0]), np.max(preds[0]), pred_label))
-            plt.imshow(ref_inputs[0].astype(int))
+            plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[c]), np.max(preds[c]), pred_label))
+            plt.imshow(ref_inputs[c].astype(int))
             plt.savefig(str(c)+".jpg")
 
 
