@@ -7,6 +7,8 @@ import os
 import datetime
 from tensorflow.python.keras.applications import vgg16
 import matplotlib.pyplot as plt
+from tensorflow.keras.applications import imagenet_utils
+
 
 
 from losses_and_metrices import  compactnessLoss
@@ -136,6 +138,7 @@ def main():
 
     while(c < 10):
         ref_inputs, ref_labels = ref_train_datagen.next()
+        ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
         preds = model(ref_inputs)
         pred_label = np.argmax(preds[0])
         plt.figure()
