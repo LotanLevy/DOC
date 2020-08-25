@@ -131,7 +131,7 @@ class DOCModel(NNInterface):
             plt.figure()
             plt.title("true label: {}, pred: {}, {}%".format(np.argmax(ref_labels[c]), np.max(preds[c]), pred_label))
             plt.imshow(ref_inputs[c].astype(int))
-            plt.savefig(str(c)+".jpg")
+            plt.savefig(str(c)+"_f.jpg")
 
 
             c+=1
