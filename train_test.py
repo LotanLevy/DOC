@@ -67,7 +67,6 @@ class Trainer(TrainObject):
 
             prediction = self.ref_model(ref_inputs, training=True)
             d_loss = self.losses["d_loss"](ref_labels, prediction)
-            print(d_loss)
 
 
             self.update_state("d_loss", d_loss)
