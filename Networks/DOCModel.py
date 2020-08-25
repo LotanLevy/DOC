@@ -23,11 +23,13 @@ class DOCModel(NNInterface):
         self.tar_model = Sequential(name="secondary")
 
         self.build_network(cls_num, input_size)
-        #
-        # vgg_model = vgg16.VGG16(weights='imagenet')
-        #
-        # self.ref_model = self.get_dropout_model( vgg_model, 2)
-        # self.tar_model = self.get_dropout_model(vgg_model, 1)
+
+        vgg_model = vgg16.VGG16(weights='imagenet')
+
+        self.ref_model = self.get_dropout_model( vgg_model, 2)
+        self.tar_model = self.get_dropout_model(vgg_model, 1)
+
+        self.ref_model = vgg16.VGG16(weights='imagenet')
 
         self.ref_model.summary()
         self.tar_model.summary()
