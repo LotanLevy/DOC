@@ -23,14 +23,23 @@ class TrainObject(ABC):
 
     def add_func_dict(self, orig_dict, new_dict, add_traker=True):
         for func_name in orig_dict:
-            new_dict[func_name] = orig_dict[func_name]
+            # new_dict[func_name] = orig_dict[func_name]()
             if add_traker:
+                new_dict[func_name] = orig_dict[func_name]
+
                 self.trackers[self.get_name(func_name)] = tf.keras.metrics.Mean(name=self.get_name(func_name))
             else:
+                new_dict[func_name] = orig_dict[func_name]()
+
                 self.trackers[self.get_name(func_name)] = new_dict[func_name]
 
-    def update_state(self, func_name, value):
-        self.trackers[self.get_name(func_name)].update_state(value)
+    def update_metric_state(self, func_name, *args):
+        self.metrics[func_name].update_state(*args)
+
+    def update_loss_state(self, func_name, *args):
+        loss = self.losses[func_name](*args)
+        self.trackers[self.get_name(func_name)].update_state(loss)
+        return loss
 
     def get_state(self):
         result = dict()
@@ -59,49 +68,66 @@ class Trainer(TrainObject):
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
         with tf.GradientTape(persistent=True) as tape:
+
+
+
+
             # Descriptiveness loss
-            # ref_inputs = vgg16.preprocess_input(ref_inputs)
+            ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
+            tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
-            # ref_inputs = imagenet_utils.preprocess_input(ref_inputs)
+            prediction = self.ref_model(ref_proc_inputs, training=True)
+            d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
+            self.update_metric_state("accuracy", ref_labels, prediction)
 
-
-            prediction = self.ref_model(ref_inputs, training=True)
-            d_loss = self.losses["d_loss"](ref_labels, prediction)
-
-
-            self.update_state("d_loss", d_loss)
-            self.metrics["accuracy"].update_state(ref_labels, prediction)
-
-            # tar_inputs = imagenet_utils.preprocess_input(tar_inputs)
-
+            # d_loss = self.losses["d_loss"](ref_labels, prediction)
             #
-            # # Compactness loss
-            # prediction = self.tar_model(tar_inputs, training=True)
+            # self.update_state("d_loss", d_loss)
+            # self.metrics["accuracy"].update_state(ref_labels, prediction)
+
+
+            print(np.argmax(ref_labels, axis=1))
+            print(np.argmax(prediction, axis=1), np.max(prediction, axis=1))
+
+
+        #
+        # with tf.GradientTape() as tape:
+
+            # fig, axs = plt.subplots(2)
+            # axs[0].imshow(tar_inputs[0].astype(np.int))
+            # axs[1].imshow(tar_inputs[1].astype(np.int))
+            # plt.show()
+
+            # Compactness loss
+            prediction = self.tar_model(tar_proc_inputs, training=True)
+            c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
+            self.update_loss_state("features_loss", tar_labels, prediction)
             # c_loss = self.losses["c_loss"](tar_labels, prediction)
             # self.update_state("c_loss", c_loss)
 
+            # features_loss = self.losses["features_loss"](tar_labels, prediction)
+            # self.update_state("features_loss", features_loss)
+
         d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
+        c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
 
-
-        # with tf.GradientTape() as tape:
-        #
-        #     # Compactness loss
-        #     prediction = self.tar_model(tar_inputs, training=True)
-        #     c_loss = self.losses["c_loss"](tar_labels, prediction)
-        #     self.update_state("c_loss", c_loss)
-
-        # c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
+        self.update_metric_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
 
         # self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
         #
-        # total_gradient = []
-        # assert (len(d_gradients) == len(c_gradients))
-        # for i in range(len(d_gradients)):
-        #     total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
-        #
-        # self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
+        total_gradient = []
+        assert (len(d_gradients) == len(c_gradients))
+        for i in range(len(d_gradients)):
+            total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
 
-        self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
+        assert self.ref_model.trainable_variables == self.tar_model.trainable_variables
+
+        self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
+
+
+        # self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
+
+        # self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
 
         return self.get_state()
 
@@ -120,29 +146,52 @@ class Validator(TrainObject):
         with tf.GradientTape(persistent=True) as tape:
             # Descriptiveness loss
             #
-            # ref_inputs = vgg16.preprocess_input(ref_inputs)
-            # tar_inputs = vgg16.preprocess_input(tar_inputs)
+            ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
+            tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
 
-            prediction = self.ref_model(ref_inputs, training=False)
-            d_loss = self.losses["d_loss"](ref_labels, prediction)
-            self.update_state("d_loss", d_loss)
+            prediction = self.ref_model(ref_proc_inputs, training=False)
+
+            d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
+            self.update_metric_state("accuracy", ref_labels, prediction)
+            # d_loss = self.losses["d_loss"](ref_labels, prediction)
+            # self.update_state("d_loss", d_loss)
+
+            # print(np.argmax(ref_labels, axis=1))
+            # print(np.argmax(prediction, axis=1), np.max(prediction, axis=1))
 
 
-            self.metrics["accuracy"].update_state(ref_labels, prediction)
 
-            # # Compactness loss
-            # prediction = self.tar_model(tar_inputs, training=False)
-            # c_loss = self.losses["c_loss"](tar_labels, prediction)
-            # self.update_state("c_loss", c_loss)
+            #
+            # self.metrics["accuracy"].update_state(ref_labels, prediction)
 
 
 
         # with tf.GradientTape() as tape:
-        #     # Compactness loss
-        #     prediction = self.tar_model(tar_inputs, training=False)
-        #     c_loss = self.losses["c_loss"](tar_labels, prediction)
-        #     self.update_state("c_loss", c_loss)
+
+            # Compactness loss
+            prediction = self.tar_model(tar_proc_inputs, training=False)
+            c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
+            self.update_loss_state("features_loss", tar_labels, prediction)
+            # c_loss = self.losses["c_loss"](tar_labels, prediction)
+            # self.update_state("c_loss", c_loss)
+            # features_loss = self.losses["features_loss"](tar_labels, prediction)
+            # self.update_state("features_loss", features_loss)
+
+            # fig, axs = plt.subplots(2)
+            # axs[0].imshow(tar_inputs[0].astype(np.int))
+            # axs[1].imshow(tar_inputs[1].astype(np.int))
+            # plt.show()
+
+
+
+        # self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
+
+        self.update_metric_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
+
+
+
+
 
         # self.update_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
 

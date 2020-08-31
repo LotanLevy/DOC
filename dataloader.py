@@ -76,6 +76,7 @@ def get_gen(to_aug):
                                     validation_split=0.2)
     else:
         return tf.keras.preprocessing.image.ImageDataGenerator(
+            preprocessing_function=vgg16.preprocess_input,
             validation_split=0.2)
 
 
@@ -86,30 +87,36 @@ def get_gen(to_aug):
 def get_directory_iterator(gen, name, input_size, batch_size, dir_path):
     return gen.flow_from_directory(dir_path, subset=name,
                                                       seed=123,
-                                                      shuffle=True,
                                                       class_mode="categorical",
                                                       target_size=input_size,
                                                       batch_size=batch_size)
 
 def create_generators(ref_path, tar_path, ref_aug, tar_aug, input_size, batch_size):
-    ref_gen = get_gen(False)
+    ref_gen = tf.keras.preprocessing.image.ImageDataGenerator(
+            validation_split=0.2)
     ref_classes = [str(i) for i in range(1000)]
     ref_train_datagen = ref_gen.flow_from_directory(ref_path, subset="training",
                                                       seed=123,
-                                                      shuffle=True,
                                                       class_mode="categorical",
                                                       target_size=input_size,
                                                       batch_size=batch_size, classes=ref_classes)
     ref_val_datagen = ref_gen.flow_from_directory(ref_path, subset="validation",
                                                       seed=123,
-                                                      shuffle=True,
                                                       class_mode="categorical",
                                                       target_size=input_size,
                                                       batch_size=batch_size, classes=ref_classes)
     # ref_train_datagen = get_directory_iterator(ref_gen, "training", input_size, batch_size, ref_path)
     # ref_val_datagen = get_directory_iterator(ref_gen, "validation", input_size, batch_size, ref_path)
 
-    tar_gen = get_gen(False)
+    tar_gen = tf.keras.preprocessing.image.ImageDataGenerator(
+        rotation_range=20,
+        zoom_range=0.15,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.15,
+        horizontal_flip=True,
+        fill_mode="nearest",
+        validation_split=0.2)
     tar_train_datagen = get_directory_iterator(tar_gen, "training", input_size, batch_size, tar_path)
     tar_val_datagen = get_directory_iterator(tar_gen, "validation", input_size, batch_size, tar_path)
 

@@ -33,7 +33,16 @@ class DOCModel(NNInterface):
         self.ref_model = self.get_dropout_model( vgg_model, 2)
         self.tar_model = self.get_dropout_model(vgg_model, 1)
 
-        self.ref_model = vgg16.VGG16(weights='imagenet')
+
+
+        for layer in self.ref_model.layers[:19]:
+            layer.trainable = False
+
+        for layer in self.ref_model.layers:
+            print(layer.name, layer.trainable)
+
+
+
 
         self.ref_model.summary()
         self.tar_model.summary()
@@ -77,23 +86,28 @@ class DOCModel(NNInterface):
         fc2 = vgg_conv.layers[-2]
         fc3 = vgg_conv.layers[-1]
         # predictions = vgg_conv.layers[-1]
-        # fc3 = tf.keras.layers.Dense(units=cls_num, name='fc3')
+        # fc3 = tf.keras.layers.Dense(cls_num, name='fc3')
         # predictions = tf.keras.layers.Activation('softmax')
         dropout1 = tf.keras.layers.Dropout(0.5, name='dropout1')
         dropout2 = tf.keras.layers.Dropout(0.5, name='dropout2')
 
 
         self.ref_model.add(fc1)
-        self.ref_model.add(dropout1)
+        # self.ref_model.add(dropout1)
         self.ref_model.add(fc2)
-        self.ref_model.add(dropout2)
+        # self.ref_model.add(dropout2)
         self.ref_model.add(fc3)
         # self.ref_model.add(predictions)
 
         self.tar_model.add(fc1)
-        self.tar_model.add(dropout1)
+        # self.tar_model.add(dropout1)
         self.tar_model.add(fc2)
         self.tar_model.add(fc3)
+
+        # self.ref_model.get_layer('fc3').set_weights(vgg_conv.layers[-1].get_weights())
+        # self.tar_model.get_layer('fc3').set_weights(vgg_conv.layers[-1].get_weights())
+
+
 
 
 
@@ -113,6 +127,7 @@ class DOCModel(NNInterface):
         self.trainer = Trainer("train", losses, metrics, self.ref_model, self.tar_model, loss_lambda, optimizer)
         self.validator = Validator("test", losses, metrics, self.ref_model, self.tar_model, loss_lambda)
 
+
     def on_validation_epoch_end(self):
         self.validator.reset()
 
@@ -121,8 +136,6 @@ class DOCModel(NNInterface):
 
 
     def train_step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-
-
         if self.ready_for_train:
             return self.trainer.step(ref_inputs, ref_labels, tar_inputs, tar_labels)
 

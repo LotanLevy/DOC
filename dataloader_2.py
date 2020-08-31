@@ -61,13 +61,13 @@ class DataLoader:
             b_idx += 1
         return batch_images, batch_labels
 
-    def __del__(self):
-        for mode in self.paths_logger:
-            with open(os.path.join(self.output_path, "{}_{}.txt".format(self.name, mode)), 'w') as f:
-                for i in range(len(self.paths_logger[mode])):
-                    f.write("{}{}{}".format(self.paths_logger[mode][i], SPLIT_FACTOR, self.labels_logger[mode][i]))
-
-
+    # def __del__(self):
+    #     for mode in self.paths_logger:
+    #         with open(os.path.join(self.output_path, "{}_{}.txt".format(self.name, mode)), 'w') as f:
+    #             for i in range(len(self.paths_logger[mode])):
+    #                 f.write("{}{}{}".format(self.paths_logger[mode][i], SPLIT_FACTOR, self.labels_logger[mode][i]))
+    #
+    #
 
 
 
