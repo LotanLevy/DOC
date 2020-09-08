@@ -2,6 +2,8 @@
 
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.keras.applications import vgg16
+
 
 class compactnessLoss(tf.keras.losses.Loss):
     def __init__(self, name='compactness_loss'):
@@ -23,17 +25,44 @@ class compactnessLoss(tf.keras.losses.Loss):
             loss = tf.math.add(tf.math.reduce_sum(tf.math.pow(diff, 2)), loss)
         return loss
 
+
+
+class CompactnesLoss2(tf.keras.losses.Loss):
+
+    def __init__(self, name='compactness_loss'):
+        super(CompactnesLoss2, self).__init__(name=name)
+
+
+    def call(self, y_true, y_pred):
+        n_dim = np.shape(y_pred)[0] # number of features vecs
+        k_dim = np.shape(y_pred)[1] # feature vec dim
+        dot_sum = tf.constant(0.0)
+
+        sum_vec = tf.reduce_sum(y_pred, axis=0)
+
+
+        for i in range(0, n_dim):
+            m_i = tf.math.subtract(sum_vec, y_pred[i])/ float(n_dim - 1)
+            x_i = y_pred[i]
+
+            diff = tf.math.subtract(x_i, m_i)
+            dot_sum = tf.math.add(tf.math.reduce_sum(tf.math.pow(diff, 2)), dot_sum)
+
+        return dot_sum /(n_dim * k_dim)
+
 class FeaturesLoss:
     def __init__(self, templates_images, model):
         self.templates_features = self.build_templates(templates_images, model)
+        self.c = compactnessLoss()
 
     def build_templates(self, templates_images, model):
         templates = []
         for i in range(templates_images.shape[0]):
             image = np.expand_dims(templates_images[i], axis=0)
             templates.append(
-                np.squeeze(model(image, training=False), axis=0))
+                np.squeeze(model.target_call(image, training=False), axis=0))
         return np.array(templates)
+
 
     def __call__(self, labels, preds):
         preds_num = preds.shape[0]
@@ -41,40 +70,12 @@ class FeaturesLoss:
         for i in range(preds_num):
             distances = []
             for t in range(self.templates_features.shape[0]):
+                # to_compare = np.array([preds[i], self.templates_features[t]])
+                # distances.append(self.c(None, to_compare))
+
+
                 distances.append(np.sqrt(float(np.dot(preds[i] - self.templates_features[t],
                                                       preds[i] - self.templates_features[t]))))  # Eucleaden distance
             losses[i] = min(distances)
         return losses
-
-
-
-class AOC_helper:
-    @staticmethod
-    def get_roc_aoc(tamplates, targets, aliens, model):
-        fpr, tpr, thresholds, roc_auc, target_scores, alien_scores = AOC_helper.get_roc_aoc_with_scores(tamplates, targets, aliens, model)
-
-        return fpr, tpr, thresholds, roc_auc, np.mean(target_scores), np.mean(alien_scores)
-
-    @staticmethod
-    def get_roc_aoc_with_scores(tamplates, targets, aliens, model):
-        loss_func = FeaturesLoss(tamplates, model)
-
-        target_num = len(targets)
-        alien_num = len(aliens)
-
-        scores = np.zeros(target_num + alien_num)
-        labels = np.zeros(target_num + alien_num)
-
-        preds = model(targets, training=False)
-        scores[:target_num] = loss_func(None, preds)
-        labels[:target_num] = np.zeros(target_num)
-
-        preds = model(aliens, training=False)
-        scores[target_num:] = loss_func(None, preds)
-        labels[target_num:] = np.ones(alien_num)
-
-        fpr, tpr, thresholds = roc_curve(labels, -scores, 0)
-        roc_auc = auc(fpr, tpr)
-        return fpr, tpr, thresholds, roc_auc, scores[:target_num], scores[target_num:]
-
 

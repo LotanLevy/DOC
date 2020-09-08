@@ -109,7 +109,6 @@ def create_generators(ref_path, tar_path, ref_aug, tar_aug, input_size, batch_si
     # ref_val_datagen = get_directory_iterator(ref_gen, "validation", input_size, batch_size, ref_path)
 
     tar_gen = tf.keras.preprocessing.image.ImageDataGenerator(
-        rotation_range=20,
         zoom_range=0.15,
         width_shift_range=0.2,
         height_shift_range=0.2,

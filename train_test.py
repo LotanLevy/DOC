@@ -5,6 +5,9 @@ import numpy as np
 from tensorflow.python.keras.applications import vgg16
 import matplotlib.pyplot as plt
 from tensorflow.keras.applications import imagenet_utils
+from sklearn.metrics import roc_curve, auc
+from losses_and_metrices import FeaturesLoss
+
 
 
 class TrainObject(ABC):
@@ -59,75 +62,59 @@ class TrainObject(ABC):
 
 
 class Trainer(TrainObject):
-    def __init__(self, name, losses, metrics, ref_model, tar_model, lambd, optimizer):
+    def __init__(self, name, losses, metrics, model, lambd, optimizer):
         super(Trainer, self).__init__(name, losses, metrics)
-        self.ref_model = ref_model
-        self.tar_model = tar_model
+        self.model = model
         self.lambd = lambd
         self.optimizer = optimizer
 
+
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
+
+
         with tf.GradientTape(persistent=True) as tape:
-
-
 
 
             # Descriptiveness loss
             ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
             tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
-            prediction = self.ref_model(ref_proc_inputs, training=True)
+            prediction = self.model(ref_proc_inputs, training=True, ref_state=True)
             d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
             self.update_metric_state("accuracy", ref_labels, prediction)
 
-            # d_loss = self.losses["d_loss"](ref_labels, prediction)
-            #
-            # self.update_state("d_loss", d_loss)
-            # self.metrics["accuracy"].update_state(ref_labels, prediction)
-
-
-            print(np.argmax(ref_labels, axis=1))
-            print(np.argmax(prediction, axis=1), np.max(prediction, axis=1))
-
-
-        #
-        # with tf.GradientTape() as tape:
-
-            # fig, axs = plt.subplots(2)
-            # axs[0].imshow(tar_inputs[0].astype(np.int))
-            # axs[1].imshow(tar_inputs[1].astype(np.int))
-            # plt.show()
+            self.update_metric_state("pred_val", np.mean(np.max(prediction, axis=1)))
 
             # Compactness loss
-            prediction = self.tar_model(tar_proc_inputs, training=True)
+            prediction = self.model(tar_proc_inputs, training=True, ref_state=False)
             c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
-            self.update_loss_state("features_loss", tar_labels, prediction)
-            # c_loss = self.losses["c_loss"](tar_labels, prediction)
-            # self.update_state("c_loss", c_loss)
+            # self.update_loss_state("features_loss", tar_labels, prediction)
 
-            # features_loss = self.losses["features_loss"](tar_labels, prediction)
-            # self.update_state("features_loss", features_loss)
-
-        d_gradients = tape.gradient(d_loss, self.ref_model.trainable_variables)
-        c_gradients = tape.gradient(c_loss, self.tar_model.trainable_variables)
+        d_gradients = tape.gradient(d_loss, self.model.trainable_variables)
+        c_gradients = tape.gradient(c_loss, self.model.trainable_variables)
 
         self.update_metric_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
 
-        # self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
-        #
         total_gradient = []
         assert (len(d_gradients) == len(c_gradients))
         for i in range(len(d_gradients)):
             total_gradient.append(d_gradients[i] * (1 - self.lambd) + c_gradients[i] * self.lambd)
 
-        assert self.ref_model.trainable_variables == self.tar_model.trainable_variables
 
-        self.optimizer.apply_gradients(zip(total_gradient, self.ref_model.trainable_variables))
+        self.optimizer.apply_gradients(zip(total_gradient, self.model.trainable_variables))
 
 
-        # self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
+        # self.optimizer.apply_gradients(zip(d_gradients, self.model.trainable_variables))
 
-        # self.optimizer.apply_gradients(zip(d_gradients, self.ref_model.trainable_variables))
+
+
+
+        # prediction = self.model(ref_proc_inputs, training=False)
+
+
+
+
+
 
         return self.get_state()
 
@@ -135,69 +122,80 @@ class Trainer(TrainObject):
 
 
 class Validator(TrainObject):
-    def __init__(self, name, losses, metrics, ref_model, tar_model, lambd):
+    def __init__(self, name, losses, metrics, model, lambd):
         super(Validator, self).__init__(name, losses, metrics)
-        self.ref_model = ref_model
-        self.tar_model = tar_model
+        self.model = model
         self.lambd = lambd
 
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-        with tf.GradientTape(persistent=True) as tape:
-            # Descriptiveness loss
-            #
+        with tf.GradientTape() as tape:
+
             ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
             tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
 
-            prediction = self.ref_model(ref_proc_inputs, training=False)
+            prediction = self.model(ref_proc_inputs, training=False, ref_state=True)
 
             d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
             self.update_metric_state("accuracy", ref_labels, prediction)
-            # d_loss = self.losses["d_loss"](ref_labels, prediction)
-            # self.update_state("d_loss", d_loss)
+
+            self.update_metric_state("pred_val", np.mean(np.max(prediction, axis=1)))
+
+
 
             # print(np.argmax(ref_labels, axis=1))
             # print(np.argmax(prediction, axis=1), np.max(prediction, axis=1))
 
+        with tf.GradientTape() as tape:
 
-
-            #
-            # self.metrics["accuracy"].update_state(ref_labels, prediction)
-
-
-
-        # with tf.GradientTape() as tape:
-
-            # Compactness loss
-            prediction = self.tar_model(tar_proc_inputs, training=False)
+            #Compactness loss
+            prediction = self.model(tar_proc_inputs, training=False, ref_state=False)
             c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
-            self.update_loss_state("features_loss", tar_labels, prediction)
-            # c_loss = self.losses["c_loss"](tar_labels, prediction)
-            # self.update_state("c_loss", c_loss)
-            # features_loss = self.losses["features_loss"](tar_labels, prediction)
-            # self.update_state("features_loss", features_loss)
-
-            # fig, axs = plt.subplots(2)
-            # axs[0].imshow(tar_inputs[0].astype(np.int))
-            # axs[1].imshow(tar_inputs[1].astype(np.int))
-            # plt.show()
-
-
-
-        # self.metrics["total"].update_state(d_loss * (1 - self.lambd) + c_loss * self.lambd)
+            # self.update_loss_state("features_loss", tar_labels, prediction)
 
         self.update_metric_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
-
-
-
-
-
-        # self.update_state("total", d_loss * (1 - self.lambd) + c_loss * self.lambd)
 
 
         return self.get_state()
 
 
+
+
+class AOC_helper:
+
+    def __init__(self, templates, targets, aliens):
+        self.templates = templates
+        self.targets = targets
+        self.aliens = aliens
+
+
+    def get_roc_aoc(self, model):
+        optimal_cutoff, roc_auc, target_scores, alien_scores = self.get_roc_aoc_with_scores(model)
+
+        return optimal_cutoff, roc_auc, np.mean(target_scores), np.mean(alien_scores)
+
+    def get_roc_aoc_with_scores(self, model):
+        feature_loss = FeaturesLoss(self.templates, model)
+
+        target_num = len(self.targets)
+        alien_num = len(self.aliens)
+
+        scores = np.zeros(target_num + alien_num)
+        labels = np.zeros(target_num + alien_num)
+
+        preds = model.target_call(self.targets, training=False)
+        scores[:target_num] = feature_loss(None, preds)
+        labels[:target_num] = np.zeros(target_num)
+
+        preds = model.target_call(self.aliens, training=False)
+        scores[target_num:] = feature_loss(None, preds)
+        labels[target_num:] = np.ones(alien_num)
+
+        fpr, tpr, thresholds = roc_curve(labels, -scores, 0)
+        roc_auc = auc(fpr, tpr)
+        optimal_idx = np.argmax(tpr - fpr)
+        optimal_cutoff = thresholds[optimal_idx]
+        return optimal_cutoff, roc_auc, scores[:target_num], scores[target_num:]
 
 
