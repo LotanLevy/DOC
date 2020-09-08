@@ -28,7 +28,7 @@ class DOCModel(NNInterface):
         #
         # self.build_network(cls_num, input_size)
 
-        self.vgg_model = vgg16.VGG16(weights=None)
+        self.vgg_model = vgg16.VGG16(weights="imagenet")
 
         self.ref_model = self.get_dropout_model( self.vgg_model, 2)
         self.tar_model = self.get_dropout_model(self.vgg_model, 1)
