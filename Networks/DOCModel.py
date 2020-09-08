@@ -34,8 +34,8 @@ class DOCModel(NNInterface):
         self.tar_model = self.get_dropout_model(self.vgg_model, 1)
 
 
-        self.ref_model = self.vgg_model
-        self.tar_model = self.vgg_model
+        # self.ref_model = self.vgg_model
+        # self.tar_model = self.vgg_model
 
 
 
