@@ -7,16 +7,16 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.applications import imagenet_utils
 from tensorflow.python.keras.models import Model
 from PIL import Image
+from new_dataloader import get_iterators_by_root_dir
 
 
-np.random.seed(123)
 
 
 
 
 ref_path = "C:\\Users\\lotan\\Documents\\studies\\Affordances\\datasets\\imagenet_val_splitted"
 input_size = (224,224)
-batch_size = 16
+batch_size = 32
 steps_per_epoch = 1000
 validation_steps = 10
 print_freq = 10
@@ -72,24 +72,24 @@ def get_iterator(file_path):
             labels.append(int(label))
         return DataIter(paths, labels, batch_size, input_size, shuffle=True)
 
-
+#
 # ref_gen = tf.keras.preprocessing.image.ImageDataGenerator(
 #             validation_split=0.2)
 # ref_classes = [str(i) for i in range(1000)]
 # ref_train_datagen = ref_gen.flow_from_directory(ref_path, subset="training",
-#                                                   seed=123,
 #                                                   class_mode="categorical",
 #                                                   target_size=input_size,
 #                                                   batch_size=batch_size, classes=ref_classes)
 # ref_val_datagen = ref_gen.flow_from_directory(ref_path, subset="validation",
-#                                                   seed=123,
 #                                                   class_mode="categorical",
 #                                                   target_size=input_size,
 #                                                   batch_size=batch_size, classes=ref_classes)
 
+ref_train_datagen, ref_val_datagen = get_iterators_by_root_dir(ref_path, batch_size, input_size, 0.2, 1000, shuffle=True)
 
-ref_train_datagen = get_iterator("C:/Users/lotan/Documents/studies/Affordances/datasets/imagenet_files/train.txt")
-ref_val_datagen = get_iterator("C:/Users/lotan/Documents/studies/Affordances/datasets/imagenet_files/val.txt")
+
+# ref_train_datagen = get_iterator("C:/Users/lotan/Documents/studies/Affordances/datasets/imagenet_files/train.txt")
+# ref_val_datagen = get_iterator("C:/Users/lotan/Documents/studies/Affordances/datasets/imagenet_files/val.txt")
 
 
 model = vgg16.VGG16(weights="imagenet")
@@ -107,8 +107,15 @@ for layer in model.layers[:19]:
 model.summary()
 
 
-base_learning_rate = 0.0001
+base_learning_rate = 0.00001
 optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate)
+
+
+validation_data = []
+
+for i in range(validation_steps):
+    (x_batch_val, y_batch_val) = ref_val_datagen.next()
+    validation_data.append((x_batch_val, y_batch_val))
 
 
 for step in range(steps_per_epoch):
@@ -155,8 +162,8 @@ for step in range(steps_per_epoch):
             # plt.show()
 
 
-            for i in range(validation_steps):
-                (x_batch_val, y_batch_val) = ref_train_datagen.next()
+            for data in validation_data:
+                (x_batch_val, y_batch_val) = data
                 with tf.GradientTape() as tape:
                     assert x_batch_val.shape[0] == batch_size
                     proc = imagenet_utils.preprocess_input(np.copy(x_batch_val))

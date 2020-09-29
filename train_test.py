@@ -71,22 +71,24 @@ class Trainer(TrainObject):
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
 
+        #compactness step
+
 
         with tf.GradientTape(persistent=True) as tape:
 
 
             # Descriptiveness loss
-            ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
-            tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
+            # ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
+            # tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
-            prediction = self.model(ref_proc_inputs, training=True, ref_state=True)
+            prediction = self.model(ref_inputs, training=True, ref_state=True)
             d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
             self.update_metric_state("accuracy", ref_labels, prediction)
 
             self.update_metric_state("pred_val", np.mean(np.max(prediction, axis=1)))
 
             # Compactness loss
-            prediction = self.model(tar_proc_inputs, training=True, ref_state=False)
+            prediction = self.model(tar_inputs, training=True, ref_state=False)
             c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
             # self.update_loss_state("features_loss", tar_labels, prediction)
 
@@ -129,13 +131,13 @@ class Validator(TrainObject):
 
 
     def step(self, ref_inputs, ref_labels, tar_inputs, tar_labels):
-        with tf.GradientTape() as tape:
+        with tf.GradientTape(persistent=True) as tape:
 
-            ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
-            tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
+            # ref_proc_inputs = vgg16.preprocess_input(np.copy(ref_inputs))
+            # tar_proc_inputs = vgg16.preprocess_input(np.copy(tar_inputs))
 
 
-            prediction = self.model(ref_proc_inputs, training=False, ref_state=True)
+            prediction = self.model(ref_inputs, training=False, ref_state=True)
 
             d_loss = self.update_loss_state("d_loss", ref_labels, prediction)
             self.update_metric_state("accuracy", ref_labels, prediction)
@@ -147,10 +149,10 @@ class Validator(TrainObject):
             # print(np.argmax(ref_labels, axis=1))
             # print(np.argmax(prediction, axis=1), np.max(prediction, axis=1))
 
-        with tf.GradientTape() as tape:
+        # with tf.GradientTape() as tape:
 
             #Compactness loss
-            prediction = self.model(tar_proc_inputs, training=False, ref_state=False)
+            prediction = self.model(tar_inputs, training=False, ref_state=False)
             c_loss = self.update_loss_state("c_loss", tar_labels, prediction)
             # self.update_loss_state("features_loss", tar_labels, prediction)
 
@@ -164,10 +166,12 @@ class Validator(TrainObject):
 
 class AOC_helper:
 
-    def __init__(self, templates, targets, aliens):
+    def __init__(self, templates, targets, aliens, cls_num, batch_size):
         self.templates = templates
         self.targets = targets
         self.aliens = aliens
+        self.cls_num = cls_num
+        self.batch_size = batch_size
 
 
     def get_roc_aoc(self, model):
@@ -176,7 +180,7 @@ class AOC_helper:
         return optimal_cutoff, roc_auc, np.mean(target_scores), np.mean(alien_scores)
 
     def get_roc_aoc_with_scores(self, model):
-        feature_loss = FeaturesLoss(self.templates, model)
+        feature_loss = FeaturesLoss(self.templates, model, self.cls_num, self.batch_size)
 
         target_num = len(self.targets)
         alien_num = len(self.aliens)

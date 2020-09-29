@@ -2,11 +2,25 @@
 
 import tensorflow as tf
 import numpy as np
+from tensorflow.keras import backend as K
+
 from tensorflow.python.keras.applications import vgg16
 
 
+class compactnessLoss1(tf.keras.losses.Loss):
+    def __init__(self, classes, batch_size, name='compactness_loss'):
+        super(compactnessLoss, self).__init__(name=name)
+        self.classes = classes
+        self.batch_size = batch_size
+
+    def call(self, y_true, y_pred):
+        lc = 1 / (self.classes * self.batch_size) * self.batch_size ** 2 * K.sum((y_pred - K.mean(y_pred, axis=0)) ** 2, axis=[1]) / (
+                    (self.batch_size - 1) ** 2)
+        return lc
+
+
 class compactnessLoss(tf.keras.losses.Loss):
-    def __init__(self, name='compactness_loss'):
+    def __init__(self, classes, batch_size , name='compactness_loss'):
         super(compactnessLoss, self).__init__(name=name)
 
     def call(self, y_true, y_pred):
@@ -20,7 +34,7 @@ class compactnessLoss(tf.keras.losses.Loss):
             mask = tf.constant(mask)
             others = tf.boolean_mask(y_pred, mask)
 
-            mean_vec = tf.math.reduce_sum(others, axis=0) / float(n_dim - 1)
+            mean_vec = tf.math.reduce_sum(others, axis=0) / float(n_dim - 1) # mi
             diff = tf.math.subtract(y_pred[i], mean_vec) / float(n_dim)
             loss = tf.math.add(tf.math.reduce_sum(tf.math.pow(diff, 2)), loss)
         return loss
@@ -51,9 +65,9 @@ class CompactnesLoss2(tf.keras.losses.Loss):
         return dot_sum /(n_dim * k_dim)
 
 class FeaturesLoss:
-    def __init__(self, templates_images, model):
+    def __init__(self, templates_images, model, cls_num, batch_size):
         self.templates_features = self.build_templates(templates_images, model)
-        self.c = compactnessLoss()
+        self.c = compactnessLoss(cls_num, batch_size)
 
     def build_templates(self, templates_images, model):
         templates = []

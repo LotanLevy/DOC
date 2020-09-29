@@ -1,12 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from Networks.NNInterface import NNInterface
 from tensorflow.python.keras.applications import vgg16
-from tensorflow.python.keras.models import Model, Sequential
-from tensorflow.python.keras.layers import Dropout, Activation
-import os
+from tensorflow.python.keras.layers import Dropout
 from train_test import Trainer, Validator
-from tensorflow.keras.applications import imagenet_utils
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -30,12 +26,12 @@ class DOCModel(NNInterface):
 
         self.vgg_model = vgg16.VGG16(weights="imagenet")
 
-        self.ref_model = self.get_dropout_model( self.vgg_model, 2)
-        self.tar_model = self.get_dropout_model(self.vgg_model, 1)
+        # self.ref_model = self.get_dropout_model( self.vgg_model, 2)
+        # self.tar_model = self.get_dropout_model(self.vgg_model, 1)
 
 
-        # self.ref_model = self.vgg_model
-        # self.tar_model = self.vgg_model
+        self.ref_model = self.vgg_model
+        self.tar_model = self.vgg_model
 
 
 
@@ -76,46 +72,6 @@ class DOCModel(NNInterface):
             model.add(layer)
         return model
         # return self.ref_model
-
-
-    #
-    # def build_network(self, cls_num, input_size):
-    #     input = tf.keras.layers.InputLayer(input_shape=(input_size[0], input_size[1], 3), name="input")
-    #     self.ref_model.add(input)
-    #     self.tar_model.add(input)
-    #
-    #     vgg_conv = vgg16.VGG16(weights="imagenet")
-    #     for layer in vgg_conv.layers[:-3]:
-    #         layer.trainable = False
-    #         self.ref_model.add(layer)
-    #         self.tar_model.add(layer)
-    #
-    #     fc1 = vgg_conv.layers[-3]
-    #     fc2 = vgg_conv.layers[-2]
-    #     fc3 = vgg_conv.layers[-1]
-    #     # predictions = vgg_conv.layers[-1]
-    #     # fc3 = tf.keras.layers.Dense(cls_num, name='fc3')
-    #     # predictions = tf.keras.layers.Activation('softmax')
-    #     dropout1 = tf.keras.layers.Dropout(0.5, name='dropout1')
-    #     dropout2 = tf.keras.layers.Dropout(0.5, name='dropout2')
-    #
-    #
-    #     self.ref_model.add(fc1)
-    #     self.ref_model.add(dropout1)
-    #     self.ref_model.add(fc2)
-    #     self.ref_model.add(dropout2)
-    #     self.ref_model.add(fc3)
-    #     # self.ref_model.add(predictions)
-    #
-    #     self.tar_model.add(fc1)
-    #     self.tar_model.add(dropout1)
-    #     self.tar_model.add(fc2)
-    #     self.tar_model.add(fc3)
-    #
-    #     # self.ref_model.get_layer('fc3').set_weights(vgg_conv.layers[-1].get_weights())
-    #     # self.tar_model.get_layer('fc3').set_weights(vgg_conv.layers[-1].get_weights())
-
-    #
 
     def target_call(self, x, training=False):
         proc = vgg16.preprocess_input(np.copy(x))
